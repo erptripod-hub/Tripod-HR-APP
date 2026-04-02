@@ -1,254 +1,169 @@
-<div class="dashboard-container" style="padding: 20px; background: #f5f7f9;">
-    <!-- Stats Row -->
-    <div class="row" style="margin-bottom: 30px;">
-        <div class="col-md-3">
-            <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px;">
-                <div style="font-size: 12px; text-transform: uppercase; opacity: 0.9;">Total Appraisals</div>
-                <div style="font-size: 36px; font-weight: bold; margin: 10px 0;" id="total-count">-</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 8px;">
-                <div style="font-size: 12px; text-transform: uppercase; opacity: 0.9;">Pending Reviews</div>
-                <div style="font-size: 36px; font-weight: bold; margin: 10px 0;" id="pending-count">-</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 8px;">
-                <div style="font-size: 12px; text-transform: uppercase; opacity: 0.9;">Completed</div>
-                <div style="font-size: 36px; font-weight: bold; margin: 10px 0;" id="completed-count">-</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 20px; border-radius: 8px;">
-                <div style="font-size: 12px; text-transform: uppercase; opacity: 0.9;">Average Rating</div>
-                <div style="font-size: 36px; font-weight: bold; margin: 10px 0;" id="avg-rating">-</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filter Bar -->
-    <div class="card" style="padding: 15px; margin-bottom: 20px; border-radius: 8px;">
-        <div class="row">
-            <div class="col-md-3">
-                <label style="font-size: 12px; color: #6c757d; margin-bottom: 5px;">Department</label>
-                <select id="filter-department" class="form-control" style="height: 32px; font-size: 13px;">
-                    <option value="">All Departments</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label style="font-size: 12px; color: #6c757d; margin-bottom: 5px;">Appraisal Cycle</label>
-                <select id="filter-cycle" class="form-control" style="height: 32px; font-size: 13px;">
-                    <option value="">All Cycles</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label style="font-size: 12px; color: #6c757d; margin-bottom: 5px;">Status</label>
-                <select id="filter-status" class="form-control" style="height: 32px; font-size: 13px;">
-                    <option value="">All Status</option>
-                    <option value="0">Pending</option>
-                    <option value="1">Completed</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label style="font-size: 12px; color: #6c757d; margin-bottom: 5px;">Search</label>
-                <input type="text" id="search-employee" class="form-control" placeholder="Search employee..." style="height: 32px; font-size: 13px;">
-            </div>
-        </div>
-    </div>
-
-    <!-- View Toggle -->
-    <div style="margin-bottom: 20px;">
-        <button class="btn btn-primary btn-sm view-btn active" onclick="switchView('department')">📁 Department View</button>
-        <button class="btn btn-default btn-sm view-btn" onclick="switchView('employee')">👥 Employee View</button>
-    </div>
-
-    <!-- Department View -->
-    <div id="department-view"></div>
-
-    <!-- Employee View -->
-    <div id="employee-view" style="display: none;"></div>
+<div class="frappe-control" data-page="appraisal-dashboard">
+	<div class="page-content">
+		<div class="container">
+			<div id="dashboard-stats" style="margin-bottom: 30px;"></div>
+			<div id="dashboard-filters" style="margin-bottom: 20px;"></div>
+			<div id="dashboard-content"></div>
+		</div>
+	</div>
 </div>
 
 <script>
-frappe.ready(function() {
-    loadDashboard();
-});
-
-function loadDashboard() {
-    frappe.call({
-        method: 'tripod_hr.tripod_hr.page.appraisal_dashboard.appraisal_dashboard.get_dashboard_data',
-        callback: function(r) {
-            if (r.message) {
-                updateStats(r.message.stats);
-                populateDepartmentView(r.message.departments);
-                populateEmployeeView(r.message.employees);
-                populateFilters(r.message.filters);
-            }
-        },
-        error: function(r) {
-            console.error('Error loading dashboard:', r);
-            frappe.msgprint('Error loading dashboard data. Please check console.');
-        }
-    });
+frappe.pages['appraisal-dashboard'].on_page_load = function(wrapper) {
+	var page = frappe.ui.make_app_page({
+		parent: wrapper,
+		title: 'Appraisal Dashboard',
+		single_column: true
+	});
+	
+	frappe.appraisal_dashboard = new AppraisalDashboard(page);
 }
 
-function updateStats(stats) {
-    document.getElementById('total-count').textContent = stats.total || 0;
-    document.getElementById('pending-count').textContent = stats.pending || 0;
-    document.getElementById('completed-count').textContent = stats.completed || 0;
-    document.getElementById('avg-rating').textContent = stats.avg_rating ? stats.avg_rating.toFixed(1) : '0.0';
-}
-
-function populateDepartmentView(departments) {
-    let html = '';
-    
-    if (!departments || departments.length === 0) {
-        html = '<div class="text-muted text-center" style="padding: 40px;">No appraisals found. Create your first appraisal!</div>';
-    } else {
-        departments.forEach(dept => {
-            html += `
-                <div class="card" style="margin-bottom: 20px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                    <div style="padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div style="font-size: 20px; font-weight: bold;">📁 ${dept.name}</div>
-                            <div style="display: flex; gap: 20px; font-size: 14px;">
-                                <span>Total: ${dept.total}</span>
-                                <span>Completed: ${dept.completed}</span>
-                                <span>Pending: ${dept.pending}</span>
-                                <span>Avg: ${dept.avg_rating.toFixed(1)}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <table class="table table-bordered" style="margin: 0;">
-                        <thead style="background: #f8f9fa;">
-                            <tr>
-                                <th>Employee</th>
-                                <th>Cycle</th>
-                                <th>Rating</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-            
-            dept.employees.forEach(emp => {
-                const statusClass = emp.docstatus === 1 ? 'success' : 'warning';
-                const statusText = emp.docstatus === 1 ? 'Completed' : 'Pending';
-                const ratingColor = emp.overall_rating >= 4 ? '#27ae60' : emp.overall_rating >= 3 ? '#f39c12' : '#e74c3c';
-                
-                html += `
-                    <tr style="cursor: pointer;" onclick="openAppraisal('${emp.name}')">
-                        <td><strong>${emp.employee_name}</strong><br><small class="text-muted">${emp.employee_number || ''}</small></td>
-                        <td>${emp.appraisal_cycle || '-'}</td>
-                        <td><span style="background: ${ratingColor}; color: white; padding: 3px 10px; border-radius: 12px; font-weight: bold;">${emp.overall_rating ? emp.overall_rating.toFixed(1) : '-'}</span></td>
-                        <td><span class="label label-${statusClass}">${statusText}</span></td>
-                        <td><button class="btn btn-xs btn-primary" onclick="openAppraisal('${emp.name}'); event.stopPropagation();">View</button></td>
-                    </tr>
-                `;
-            });
-            
-            html += `
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        });
-    }
-    
-    document.getElementById('department-view').innerHTML = html;
-}
-
-function populateEmployeeView(employees) {
-    let html = `
-        <div class="card" style="border-radius: 8px; overflow: hidden;">
-            <table class="table table-bordered" style="margin: 0;">
-                <thead style="background: #f8f9fa;">
-                    <tr>
-                        <th>Employee</th>
-                        <th>Department</th>
-                        <th>Cycle</th>
-                        <th>Rating</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-    `;
-    
-    if (!employees || employees.length === 0) {
-        html += '<tr><td colspan="6" class="text-center text-muted">No appraisals found</td></tr>';
-    } else {
-        employees.forEach(emp => {
-            const statusClass = emp.docstatus === 1 ? 'success' : 'warning';
-            const statusText = emp.docstatus === 1 ? 'Completed' : 'Pending';
-            const ratingColor = emp.overall_rating >= 4 ? '#27ae60' : emp.overall_rating >= 3 ? '#f39c12' : '#e74c3c';
-            
-            html += `
-                <tr style="cursor: pointer;" onclick="openAppraisal('${emp.name}')">
-                    <td><strong>${emp.employee_name}</strong><br><small class="text-muted">${emp.employee_number || ''}</small></td>
-                    <td>${emp.department || '-'}</td>
-                    <td>${emp.appraisal_cycle || '-'}</td>
-                    <td><span style="background: ${ratingColor}; color: white; padding: 3px 10px; border-radius: 12px; font-weight: bold;">${emp.overall_rating ? emp.overall_rating.toFixed(1) : '-'}</span></td>
-                    <td><span class="label label-${statusClass}">${statusText}</span></td>
-                    <td><button class="btn btn-xs btn-primary" onclick="openAppraisal('${emp.name}'); event.stopPropagation();">View</button></td>
-                </tr>
-            `;
-        });
-    }
-    
-    html += `
-                </tbody>
-            </table>
-        </div>
-    `;
-    
-    document.getElementById('employee-view').innerHTML = html;
-}
-
-function switchView(view) {
-    document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-    
-    if (view === 'department') {
-        document.getElementById('department-view').style.display = 'block';
-        document.getElementById('employee-view').style.display = 'none';
-    } else {
-        document.getElementById('department-view').style.display = 'none';
-        document.getElementById('employee-view').style.display = 'block';
-    }
-}
-
-function openAppraisal(name) {
-    frappe.set_route('Form', 'Performance Appraisal Form', name);
-}
-
-function populateFilters(filters) {
-    // Populate department filter
-    let deptHtml = '<option value="">All Departments</option>';
-    if (filters.departments) {
-        filters.departments.forEach(dept => {
-            deptHtml += `<option value="${dept}">${dept}</option>`;
-        });
-    }
-    document.getElementById('filter-department').innerHTML = deptHtml;
-    
-    // Populate cycle filter
-    let cycleHtml = '<option value="">All Cycles</option>';
-    if (filters.cycles) {
-        filters.cycles.forEach(cycle => {
-            cycleHtml += `<option value="${cycle}">${cycle}</option>`;
-        });
-    }
-    document.getElementById('filter-cycle').innerHTML = cycleHtml;
+class AppraisalDashboard {
+	constructor(page) {
+		this.page = page;
+		this.make();
+	}
+	
+	make() {
+		this.load_data();
+	}
+	
+	load_data() {
+		frappe.call({
+			method: 'tripod_hr.tripod_hr.page.appraisal_dashboard.appraisal_dashboard.get_dashboard_data',
+			callback: (r) => {
+				if (r.message) {
+					this.render_stats(r.message.stats);
+					this.render_content(r.message.departments, r.message.employees);
+				} else {
+					this.render_empty();
+				}
+			}
+		});
+	}
+	
+	render_stats(stats) {
+		const html = `
+			<div class="row">
+				<div class="col-sm-3">
+					<div class="panel panel-default" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+						<div class="panel-body text-center">
+							<h5 style="color: white; opacity: 0.9;">Total Appraisals</h5>
+							<h2 style="color: white; margin: 10px 0;">${stats.total || 0}</h2>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-3">
+					<div class="panel panel-default" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+						<div class="panel-body text-center">
+							<h5 style="color: white; opacity: 0.9;">Pending</h5>
+							<h2 style="color: white; margin: 10px 0;">${stats.pending || 0}</h2>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-3">
+					<div class="panel panel-default" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
+						<div class="panel-body text-center">
+							<h5 style="color: white; opacity: 0.9;">Completed</h5>
+							<h2 style="color: white; margin: 10px 0;">${stats.completed || 0}</h2>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-3">
+					<div class="panel panel-default" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white;">
+						<div class="panel-body text-center">
+							<h5 style="color: white; opacity: 0.9;">Avg Rating</h5>
+							<h2 style="color: white; margin: 10px 0;">${stats.avg_rating ? stats.avg_rating.toFixed(1) : '0.0'}</h2>
+						</div>
+					</div>
+				</div>
+			</div>
+		`;
+		$('#dashboard-stats').html(html);
+	}
+	
+	render_content(departments, employees) {
+		if (!departments || departments.length === 0) {
+			this.render_empty();
+			return;
+		}
+		
+		let html = '<div class="dashboard-departments">';
+		
+		departments.forEach(dept => {
+			html += `
+				<div class="panel panel-default" style="margin-bottom: 20px;">
+					<div class="panel-heading" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+						<h4 class="panel-title" style="color: white;">
+							📁 ${dept.name} 
+							<span class="pull-right" style="font-size: 14px;">
+								Total: ${dept.total} | Completed: ${dept.completed} | Avg: ${dept.avg_rating.toFixed(1)}
+							</span>
+						</h4>
+					</div>
+					<div class="panel-body" style="padding: 0;">
+						<table class="table table-bordered" style="margin: 0;">
+							<thead>
+								<tr>
+									<th>Employee</th>
+									<th>Cycle</th>
+									<th>Rating</th>
+									<th>Status</th>
+									<th>Action</th>
+								</tr>
+							</thead>
+							<tbody>
+			`;
+			
+			dept.employees.forEach(emp => {
+				const statusLabel = emp.docstatus === 1 ? 
+					'<span class="label label-success">Completed</span>' : 
+					'<span class="label label-warning">Pending</span>';
+				const rating = emp.overall_rating ? emp.overall_rating.toFixed(1) : '-';
+				
+				html += `
+					<tr>
+						<td><strong>${emp.employee_name}</strong></td>
+						<td>${emp.appraisal_cycle || '-'}</td>
+						<td>${rating}</td>
+						<td>${statusLabel}</td>
+						<td>
+							<button class="btn btn-xs btn-primary" 
+								onclick="frappe.set_route('Form', 'Performance Appraisal Form', '${emp.name}')">
+								View
+							</button>
+						</td>
+					</tr>
+				`;
+			});
+			
+			html += `
+							</tbody>
+						</table>
+					</div>
+				</div>
+			`;
+		});
+		
+		html += '</div>';
+		$('#dashboard-content').html(html);
+	}
+	
+	render_empty() {
+		const html = `
+			<div class="panel panel-default">
+				<div class="panel-body text-center text-muted" style="padding: 60px 20px;">
+					<h4>No Appraisals Found</h4>
+					<p>Create your first performance appraisal to get started!</p>
+					<button class="btn btn-primary btn-sm" 
+						onclick="frappe.new_doc('Performance Appraisal Form')">
+						Create New Appraisal
+					</button>
+				</div>
+			</div>
+		`;
+		$('#dashboard-content').html(html);
+	}
 }
 </script>
-
-<style>
-.view-btn.active {
-    background-color: #667eea !important;
-    border-color: #667eea !important;
-    color: white !important;
-}
-</style>
