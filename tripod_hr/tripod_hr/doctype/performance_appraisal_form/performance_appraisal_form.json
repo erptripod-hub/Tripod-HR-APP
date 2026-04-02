@@ -8,78 +8,98 @@
  "engine": "InnoDB",
  "field_order": [
   "naming_series",
-  "employee_information_section",
   "employee",
   "employee_name",
   "employee_number",
-  "column_break_2",
   "department",
   "designation",
   "line_manager",
-  "column_break_3",
+  "column_break_1",
   "review_period",
   "annual_target",
-  "rating_scale_section",
+  "section_break_2",
   "rating_scale_html",
-  "objectives_section",
-  "objectives",
-  "section_break_11",
+  "section_break_obj1",
+  "objective_1_title",
+  "objective_1_values",
+  "objective_1_expectations",
+  "objective_1_factors",
+  "objective_1_manager_comments",
+  "objective_1_rating",
+  "section_break_obj2",
+  "objective_2_title",
+  "objective_2_values",
+  "objective_2_expectations",
+  "objective_2_factors",
+  "objective_2_manager_comments",
+  "objective_2_rating",
+  "section_break_obj3",
+  "objective_3_title",
+  "objective_3_values",
+  "objective_3_expectations",
+  "objective_3_factors",
+  "objective_3_manager_comments",
+  "objective_3_rating",
+  "section_break_obj4",
+  "objective_4_title",
+  "objective_4_values",
+  "objective_4_expectations",
+  "objective_4_factors",
+  "objective_4_manager_comments",
+  "objective_4_rating",
+  "section_break_obj5",
+  "objective_5_title",
+  "objective_5_values",
+  "objective_5_expectations",
+  "objective_5_factors",
+  "objective_5_manager_comments",
+  "objective_5_rating",
+  "section_break_obj6",
+  "objective_6_title",
+  "objective_6_values",
+  "objective_6_expectations",
+  "objective_6_factors",
+  "objective_6_manager_comments",
+  "objective_6_rating",
+  "section_break_summary",
   "overall_rating",
   "managers_overall_comments",
   "areas_for_development",
-  "hr_decision_section",
+  "section_break_hr",
   "hr_decision",
-  "hr_remarks",
-  "workflow_section",
-  "workflow_state",
-  "amended_from"
+  "hr_remarks"
  ],
  "fields": [
   {
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Series",
-   "options": "PAF-.YYYY.-",
-   "reqd": 1
-  },
-  {
-   "fieldname": "employee_information_section",
-   "fieldtype": "Section Break",
-   "label": "Employee Information"
+   "options": "PA-.YYYY.-"
   },
   {
    "fieldname": "employee",
    "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
    "label": "Employee",
-   "options": "Employee",
-   "reqd": 1
+   "options": "Employee"
   },
   {
    "fetch_from": "employee.employee_name",
    "fieldname": "employee_name",
    "fieldtype": "Data",
-   "in_list_view": 1,
    "label": "Employee Name",
    "read_only": 1
   },
   {
-   "fetch_from": "employee.name",
+   "fetch_from": "employee.custom_employee_number",
    "fieldname": "employee_number",
    "fieldtype": "Data",
    "label": "Employee Number",
    "read_only": 1
   },
   {
-   "fieldname": "column_break_2",
-   "fieldtype": "Column Break"
-  },
-  {
    "fetch_from": "employee.department",
    "fieldname": "department",
    "fieldtype": "Link",
-   "in_standard_filter": 1,
    "label": "Department",
    "options": "Department",
    "read_only": 1
@@ -93,77 +113,283 @@
    "read_only": 1
   },
   {
+   "fetch_from": "employee.reports_to",
    "fieldname": "line_manager",
    "fieldtype": "Link",
    "label": "Line Manager",
-   "options": "Employee"
+   "options": "Employee",
+   "read_only": 1
   },
   {
-   "fieldname": "column_break_3",
+   "fieldname": "column_break_1",
    "fieldtype": "Column Break"
   },
   {
    "fieldname": "review_period",
    "fieldtype": "Data",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Review Period",
-   "reqd": 1
+   "label": "Review Period"
   },
   {
    "fieldname": "annual_target",
-   "fieldtype": "Currency",
+   "fieldtype": "Data",
    "label": "Annual Target"
   },
   {
-   "fieldname": "rating_scale_section",
+   "fieldname": "section_break_2",
    "fieldtype": "Section Break",
-   "label": "Performance Rating Scale"
+   "label": "Rating Scale"
   },
   {
    "fieldname": "rating_scale_html",
    "fieldtype": "HTML",
-   "label": "Rating Scale",
-   "options": "<table class=\"table table-bordered\" style=\"margin-top: 10px;\">\n<thead>\n<tr style=\"background-color: #f8f9fa;\">\n<th style=\"width: 15%;\">RATING</th>\n<th style=\"width: 10%;\">SCORE</th>\n<th>DEFINITION</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><strong>Outstanding</strong></td>\n<td><strong>5</strong></td>\n<td>Exceptional achievement clearly demonstrating outstanding initiative, creativity and/or results.</td>\n</tr>\n<tr>\n<td><strong>Excellent</strong></td>\n<td><strong>4</strong></td>\n<td>Consistently meets the standards and exceeds the requirements of the job in MOST aspects.</td>\n</tr>\n<tr>\n<td><strong>Good</strong></td>\n<td><strong>3</strong></td>\n<td>Normal standard of performance expectation. Fully meets the requirements of the job.</td>\n</tr>\n<tr>\n<td><strong>Fair</strong></td>\n<td><strong>2</strong></td>\n<td>Performance generally falls short of the expected standard. Improvement needed. Monthly review for 3 months.</td>\n</tr>\n<tr>\n<td><strong>Poor</strong></td>\n<td><strong>1</strong></td>\n<td>Inferior and unacceptable performance. Failure to meet basic job requirements.</td>\n</tr>\n</tbody>\n</table>"
+   "options": "<table class='table table-bordered'><tr><th>Rating</th><th>Score</th><th>Definition</th></tr><tr><td>Outstanding</td><td>5</td><td>Exceptional achievement with outstanding initiative and results</td></tr><tr><td>Excellent</td><td>4</td><td>Consistently exceeds job requirements in most aspects</td></tr><tr><td>Good</td><td>3</td><td>Meets all job requirements (standard expectation)</td></tr><tr><td>Fair</td><td>2</td><td>Falls short of expectations, needs improvement</td></tr><tr><td>Poor</td><td>1</td><td>Unacceptable performance, fails to meet basic requirements</td></tr></table>"
   },
   {
-   "fieldname": "objectives_section",
+   "fieldname": "section_break_obj1",
    "fieldtype": "Section Break",
-   "label": "Objectives & Performance Evaluation"
+   "label": "Objective 1"
   },
   {
-   "fieldname": "objectives",
-   "fieldtype": "Table",
-   "label": "Objectives",
-   "options": "Performance Appraisal Objective",
-   "reqd": 1
+   "fieldname": "objective_1_title",
+   "fieldtype": "Data",
+   "label": "Objective Title"
   },
   {
-   "fieldname": "section_break_11",
+   "fieldname": "objective_1_values",
+   "fieldtype": "Small Text",
+   "label": "Values / Competencies"
+  },
+  {
+   "fieldname": "objective_1_expectations",
+   "fieldtype": "Text",
+   "label": "Role Specific Expectations"
+  },
+  {
+   "fieldname": "objective_1_factors",
+   "fieldtype": "Text",
+   "label": "Factors to Consider"
+  },
+  {
+   "fieldname": "objective_1_manager_comments",
+   "fieldtype": "Text",
+   "label": "Manager Comments"
+  },
+  {
+   "fieldname": "objective_1_rating",
+   "fieldtype": "Select",
+   "label": "Rating",
+   "options": "\n1\n2\n3\n4\n5"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_obj2",
    "fieldtype": "Section Break",
-   "label": "Overall Performance Summary"
+   "label": "Objective 2"
+  },
+  {
+   "fieldname": "objective_2_title",
+   "fieldtype": "Data",
+   "label": "Objective Title"
+  },
+  {
+   "fieldname": "objective_2_values",
+   "fieldtype": "Small Text",
+   "label": "Values / Competencies"
+  },
+  {
+   "fieldname": "objective_2_expectations",
+   "fieldtype": "Text",
+   "label": "Role Specific Expectations"
+  },
+  {
+   "fieldname": "objective_2_factors",
+   "fieldtype": "Text",
+   "label": "Factors to Consider"
+  },
+  {
+   "fieldname": "objective_2_manager_comments",
+   "fieldtype": "Text",
+   "label": "Manager Comments"
+  },
+  {
+   "fieldname": "objective_2_rating",
+   "fieldtype": "Select",
+   "label": "Rating",
+   "options": "\n1\n2\n3\n4\n5"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_obj3",
+   "fieldtype": "Section Break",
+   "label": "Objective 3"
+  },
+  {
+   "fieldname": "objective_3_title",
+   "fieldtype": "Data",
+   "label": "Objective Title"
+  },
+  {
+   "fieldname": "objective_3_values",
+   "fieldtype": "Small Text",
+   "label": "Values / Competencies"
+  },
+  {
+   "fieldname": "objective_3_expectations",
+   "fieldtype": "Text",
+   "label": "Role Specific Expectations"
+  },
+  {
+   "fieldname": "objective_3_factors",
+   "fieldtype": "Text",
+   "label": "Factors to Consider"
+  },
+  {
+   "fieldname": "objective_3_manager_comments",
+   "fieldtype": "Text",
+   "label": "Manager Comments"
+  },
+  {
+   "fieldname": "objective_3_rating",
+   "fieldtype": "Select",
+   "label": "Rating",
+   "options": "\n1\n2\n3\n4\n5"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_obj4",
+   "fieldtype": "Section Break",
+   "label": "Objective 4"
+  },
+  {
+   "fieldname": "objective_4_title",
+   "fieldtype": "Data",
+   "label": "Objective Title"
+  },
+  {
+   "fieldname": "objective_4_values",
+   "fieldtype": "Small Text",
+   "label": "Values / Competencies"
+  },
+  {
+   "fieldname": "objective_4_expectations",
+   "fieldtype": "Text",
+   "label": "Role Specific Expectations"
+  },
+  {
+   "fieldname": "objective_4_factors",
+   "fieldtype": "Text",
+   "label": "Factors to Consider"
+  },
+  {
+   "fieldname": "objective_4_manager_comments",
+   "fieldtype": "Text",
+   "label": "Manager Comments"
+  },
+  {
+   "fieldname": "objective_4_rating",
+   "fieldtype": "Select",
+   "label": "Rating",
+   "options": "\n1\n2\n3\n4\n5"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_obj5",
+   "fieldtype": "Section Break",
+   "label": "Objective 5"
+  },
+  {
+   "fieldname": "objective_5_title",
+   "fieldtype": "Data",
+   "label": "Objective Title"
+  },
+  {
+   "fieldname": "objective_5_values",
+   "fieldtype": "Small Text",
+   "label": "Values / Competencies"
+  },
+  {
+   "fieldname": "objective_5_expectations",
+   "fieldtype": "Text",
+   "label": "Role Specific Expectations"
+  },
+  {
+   "fieldname": "objective_5_factors",
+   "fieldtype": "Text",
+   "label": "Factors to Consider"
+  },
+  {
+   "fieldname": "objective_5_manager_comments",
+   "fieldtype": "Text",
+   "label": "Manager Comments"
+  },
+  {
+   "fieldname": "objective_5_rating",
+   "fieldtype": "Select",
+   "label": "Rating",
+   "options": "\n1\n2\n3\n4\n5"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_obj6",
+   "fieldtype": "Section Break",
+   "label": "Objective 6"
+  },
+  {
+   "fieldname": "objective_6_title",
+   "fieldtype": "Data",
+   "label": "Objective Title"
+  },
+  {
+   "fieldname": "objective_6_values",
+   "fieldtype": "Small Text",
+   "label": "Values / Competencies"
+  },
+  {
+   "fieldname": "objective_6_expectations",
+   "fieldtype": "Text",
+   "label": "Role Specific Expectations"
+  },
+  {
+   "fieldname": "objective_6_factors",
+   "fieldtype": "Text",
+   "label": "Factors to Consider"
+  },
+  {
+   "fieldname": "objective_6_manager_comments",
+   "fieldtype": "Text",
+   "label": "Manager Comments"
+  },
+  {
+   "fieldname": "objective_6_rating",
+   "fieldtype": "Select",
+   "label": "Rating",
+   "options": "\n1\n2\n3\n4\n5"
+  },
+  {
+   "fieldname": "section_break_summary",
+   "fieldtype": "Section Break",
+   "label": "Summary"
   },
   {
    "fieldname": "overall_rating",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "label": "Overall Rating (1-5)",
-   "options": "1\n2\n3\n4\n5"
+   "fieldtype": "Float",
+   "label": "Overall Rating",
+   "read_only": 1
   },
   {
    "fieldname": "managers_overall_comments",
-   "fieldtype": "Text Editor",
+   "fieldtype": "Text",
    "label": "Manager's Overall Comments"
   },
   {
    "fieldname": "areas_for_development",
-   "fieldtype": "Text Editor",
+   "fieldtype": "Text",
    "label": "Areas for Development"
   },
   {
-   "fieldname": "hr_decision_section",
+   "fieldname": "section_break_hr",
    "fieldtype": "Section Break",
-   "label": "HR Decision & Actions"
+   "label": "HR Decision"
   },
   {
    "fieldname": "hr_decision",
@@ -173,29 +399,8 @@
   },
   {
    "fieldname": "hr_remarks",
-   "fieldtype": "Text Editor",
+   "fieldtype": "Text",
    "label": "HR Remarks"
-  },
-  {
-   "fieldname": "workflow_section",
-   "fieldtype": "Section Break",
-   "label": "Workflow"
-  },
-  {
-   "fieldname": "workflow_state",
-   "fieldtype": "Link",
-   "label": "Workflow State",
-   "options": "Workflow State",
-   "read_only": 1
-  },
-  {
-   "fieldname": "amended_from",
-   "fieldtype": "Link",
-   "label": "Amended From",
-   "no_copy": 1,
-   "options": "Performance Appraisal Form",
-   "print_hide": 1,
-   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
@@ -213,17 +418,6 @@
    "delete": 1,
    "email": 1,
    "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "HR Manager",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "email": 1,
-   "export": 1,
-   "permlevel": 1,
    "print": 1,
    "read": 1,
    "report": 1,
