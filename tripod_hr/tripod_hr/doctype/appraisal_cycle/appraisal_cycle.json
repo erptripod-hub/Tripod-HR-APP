@@ -1,0 +1,104 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:cycle_name",
+ "creation": "2026-04-02 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "cycle_name",
+  "cycle_type",
+  "duration_months",
+  "column_break_1",
+  "start_date",
+  "end_date",
+  "is_active",
+  "section_break_1",
+  "description"
+ ],
+ "fields": [
+  {
+   "fieldname": "cycle_name",
+   "fieldtype": "Data",
+   "label": "Cycle Name",
+   "unique": 1
+  },
+  {
+   "fieldname": "cycle_type",
+   "fieldtype": "Select",
+   "label": "Cycle Type",
+   "options": "\nProbation (3 Months)\nQuarterly (3 Months)\nHalf-Yearly (6 Months)\nAnnual (12 Months)\nCustom"
+  },
+  {
+   "fieldname": "duration_months",
+   "fieldtype": "Int",
+   "label": "Duration (Months)"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date"
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End Date"
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Is Active"
+  },
+  {
+   "fieldname": "section_break_1",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "label": "Description"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-04-02 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Tripod HR",
+ "name": "Appraisal Cycle",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Employee",
+   "share": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

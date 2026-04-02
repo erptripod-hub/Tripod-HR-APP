@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "naming_series",
+  "appraisal_cycle",
   "employee",
   "employee_name",
   "employee_number",
@@ -75,6 +76,12 @@
    "fieldtype": "Select",
    "label": "Series",
    "options": "PA-.YYYY.-"
+  },
+  {
+   "fieldname": "appraisal_cycle",
+   "fieldtype": "Link",
+   "label": "Appraisal Cycle",
+   "options": "Appraisal Cycle"
   },
   {
    "fieldname": "employee",
