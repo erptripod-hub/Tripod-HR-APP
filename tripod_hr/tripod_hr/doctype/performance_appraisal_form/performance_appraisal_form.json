@@ -1,0 +1,248 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-04-01 12:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "employee_information_section",
+  "employee",
+  "employee_name",
+  "employee_number",
+  "column_break_2",
+  "department",
+  "designation",
+  "line_manager",
+  "column_break_3",
+  "review_period",
+  "annual_target",
+  "rating_scale_section",
+  "rating_scale_html",
+  "objectives_section",
+  "objectives",
+  "section_break_11",
+  "overall_rating",
+  "managers_overall_comments",
+  "areas_for_development",
+  "hr_decision_section",
+  "hr_decision",
+  "hr_remarks",
+  "workflow_section",
+  "workflow_state",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "PAF-.YYYY.-",
+   "reqd": 1
+  },
+  {
+   "fieldname": "employee_information_section",
+   "fieldtype": "Section Break",
+   "label": "Employee Information"
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "employee.employee_name",
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Employee Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.name",
+   "fieldname": "employee_number",
+   "fieldtype": "Data",
+   "label": "Employee Number",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "employee.department",
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Department",
+   "options": "Department",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.designation",
+   "fieldname": "designation",
+   "fieldtype": "Link",
+   "label": "Designation",
+   "options": "Designation",
+   "read_only": 1
+  },
+  {
+   "fieldname": "line_manager",
+   "fieldtype": "Link",
+   "label": "Line Manager",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "review_period",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Review Period",
+   "reqd": 1
+  },
+  {
+   "fieldname": "annual_target",
+   "fieldtype": "Currency",
+   "label": "Annual Target"
+  },
+  {
+   "fieldname": "rating_scale_section",
+   "fieldtype": "Section Break",
+   "label": "Performance Rating Scale"
+  },
+  {
+   "fieldname": "rating_scale_html",
+   "fieldtype": "HTML",
+   "label": "Rating Scale",
+   "options": "<table class=\"table table-bordered\" style=\"margin-top: 10px;\">\n<thead>\n<tr style=\"background-color: #f8f9fa;\">\n<th style=\"width: 15%;\">RATING</th>\n<th style=\"width: 10%;\">SCORE</th>\n<th>DEFINITION</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><strong>Outstanding</strong></td>\n<td><strong>5</strong></td>\n<td>Exceptional achievement clearly demonstrating outstanding initiative, creativity and/or results.</td>\n</tr>\n<tr>\n<td><strong>Excellent</strong></td>\n<td><strong>4</strong></td>\n<td>Consistently meets the standards and exceeds the requirements of the job in MOST aspects.</td>\n</tr>\n<tr>\n<td><strong>Good</strong></td>\n<td><strong>3</strong></td>\n<td>Normal standard of performance expectation. Fully meets the requirements of the job.</td>\n</tr>\n<tr>\n<td><strong>Fair</strong></td>\n<td><strong>2</strong></td>\n<td>Performance generally falls short of the expected standard. Improvement needed. Monthly review for 3 months.</td>\n</tr>\n<tr>\n<td><strong>Poor</strong></td>\n<td><strong>1</strong></td>\n<td>Inferior and unacceptable performance. Failure to meet basic job requirements.</td>\n</tr>\n</tbody>\n</table>"
+  },
+  {
+   "fieldname": "objectives_section",
+   "fieldtype": "Section Break",
+   "label": "Objectives & Performance Evaluation"
+  },
+  {
+   "fieldname": "objectives",
+   "fieldtype": "Table",
+   "label": "Objectives",
+   "options": "Performance Appraisal Objective",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_11",
+   "fieldtype": "Section Break",
+   "label": "Overall Performance Summary"
+  },
+  {
+   "fieldname": "overall_rating",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Overall Rating (1-5)",
+   "options": "1\n2\n3\n4\n5"
+  },
+  {
+   "fieldname": "managers_overall_comments",
+   "fieldtype": "Text Editor",
+   "label": "Manager's Overall Comments"
+  },
+  {
+   "fieldname": "areas_for_development",
+   "fieldtype": "Text Editor",
+   "label": "Areas for Development"
+  },
+  {
+   "fieldname": "hr_decision_section",
+   "fieldtype": "Section Break",
+   "label": "HR Decision & Actions"
+  },
+  {
+   "fieldname": "hr_decision",
+   "fieldtype": "Select",
+   "label": "HR Decision",
+   "options": "\nIncrement\nPromotion\nNo Change\nPerformance Improvement Plan\nDemotion\nTransfer\nSeparation"
+  },
+  {
+   "fieldname": "hr_remarks",
+   "fieldtype": "Text Editor",
+   "label": "HR Remarks"
+  },
+  {
+   "fieldname": "workflow_section",
+   "fieldtype": "Section Break",
+   "label": "Workflow"
+  },
+  {
+   "fieldname": "workflow_state",
+   "fieldtype": "Link",
+   "label": "Workflow State",
+   "options": "Workflow State",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Performance Appraisal Form",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-04-01 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Tripod HR",
+ "name": "Performance Appraisal Form",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "permlevel": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Employee",
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

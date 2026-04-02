@@ -1,0 +1,85 @@
+{
+ "actions": [],
+ "creation": "2026-04-01 12:00:00",
+ "docstatus": 0,
+ "doctype": "Workflow",
+ "document_type": "Performance Appraisal Form",
+ "is_active": 1,
+ "modified": "2026-04-01 12:00:00",
+ "modified_by": "Administrator",
+ "name": "Performance Appraisal Workflow",
+ "override_status": 0,
+ "owner": "Administrator",
+ "send_email_alert": 1,
+ "states": [
+  {
+   "allow_edit": "HR Manager",
+   "doc_status": "0",
+   "state": "Draft",
+   "workflow_state_name": "Draft"
+  },
+  {
+   "allow_edit": "Employee",
+   "doc_status": "0",
+   "state": "With Manager",
+   "workflow_state_name": "With Manager"
+  },
+  {
+   "allow_edit": "All",
+   "doc_status": "0",
+   "state": "With Employee",
+   "workflow_state_name": "With Employee"
+  },
+  {
+   "allow_edit": "HR Manager",
+   "doc_status": "0",
+   "state": "With HR",
+   "workflow_state_name": "With HR"
+  },
+  {
+   "allow_edit": "HR Manager",
+   "doc_status": "1",
+   "state": "Completed",
+   "workflow_state_name": "Completed"
+  }
+ ],
+ "transitions": [
+  {
+   "action": "Send to Manager",
+   "allowed": "HR Manager",
+   "allow_self_approval": 0,
+   "next_state": "With Manager",
+   "state": "Draft"
+  },
+  {
+   "action": "Send to Employee",
+   "allowed": "Employee",
+   "allow_self_approval": 0,
+   "next_state": "With Employee",
+   "state": "With Manager"
+  },
+  {
+   "action": "Return to HR",
+   "allowed": "All",
+   "allow_self_approval": 0,
+   "next_state": "With HR",
+   "state": "With Employee"
+  },
+  {
+   "action": "Approve",
+   "allowed": "HR Manager",
+   "allow_self_approval": 0,
+   "next_state": "Completed",
+   "state": "With HR"
+  },
+  {
+   "action": "Reject",
+   "allowed": "HR Manager",
+   "allow_self_approval": 0,
+   "next_state": "Draft",
+   "state": "With Manager"
+  }
+ ],
+ "workflow_name": "Performance Appraisal Workflow",
+ "workflow_state_field": "workflow_state"
+}

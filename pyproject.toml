@@ -1,0 +1,26 @@
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "tripod_hr"
+authors = [
+    {name = "Tripod", email = "hr@tripod.com"}
+]
+description = "Custom HR Management App for Tripod - Performance Appraisals and HR Workflows"
+requires-python = ">=3.10"
+readme = "README.md"
+dynamic = ["version"]
+dependencies = [
+    "frappe",
+    "erpnext",
+    "hrms"
+]
+
+[project.urls]
+Home = "https://github.com/erptripod-hub/Tripod_HR"
+Repository = "https://github.com/erptripod-hub/Tripod_HR.git"
+
+[tool.bench.dev-dependencies]
+
+[tool.bench]
