@@ -1,0 +1,160 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:policy_name",
+ "creation": "2026-04-02 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "policy_name",
+  "department",
+  "column_break_1",
+  "version",
+  "status",
+  "section_break_1",
+  "last_reviewed",
+  "next_review_date",
+  "column_break_2",
+  "applicable_roles",
+  "section_break_2",
+  "summary",
+  "section_break_3",
+  "policy_document"
+ ],
+ "fields": [
+  {
+   "fieldname": "policy_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Policy Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Department",
+   "options": "\nHR\nProcurement\nFinance\nIT\nOperations\nLegal\nAdmin\nAll Departments"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1.0",
+   "fieldname": "version",
+   "fieldtype": "Data",
+   "label": "Version"
+  },
+  {
+   "default": "Active",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Active\nUnder Review\nArchived\nDraft"
+  },
+  {
+   "fieldname": "section_break_1",
+   "fieldtype": "Section Break",
+   "label": "Review Details"
+  },
+  {
+   "fieldname": "last_reviewed",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Last Reviewed"
+  },
+  {
+   "fieldname": "next_review_date",
+   "fieldtype": "Date",
+   "label": "Next Review Date"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "applicable_roles",
+   "fieldtype": "Data",
+   "label": "Applicable Roles",
+   "description": "e.g. All Employees, HR Only, Management"
+  },
+  {
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break",
+   "label": "Policy Summary"
+  },
+  {
+   "fieldname": "summary",
+   "fieldtype": "Text Editor",
+   "label": "Summary"
+  },
+  {
+   "fieldname": "section_break_3",
+   "fieldtype": "Section Break",
+   "label": "Policy Document"
+  },
+  {
+   "fieldname": "policy_document",
+   "fieldtype": "Attach",
+   "label": "Policy Document (PDF / Word)",
+   "description": "Attach the full policy document. Employees can view but not download."
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-04-02 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Tripod HR",
+ "name": "Company Policy",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Employee Self Service",
+   "share": 0,
+   "export": 0,
+   "print": 0
+  },
+  {
+   "read": 1,
+   "role": "Employee",
+   "share": 0,
+   "export": 0,
+   "print": 0
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "department",
+ "sort_order": "ASC",
+ "states": [],
+ "track_changes": 1
+}

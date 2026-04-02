@@ -1,0 +1,106 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"stats-section\",\"type\":\"header\",\"data\":{\"text\":\"HR & Payroll\",\"level\":4}},{\"id\":\"hrpayroll-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"HR & Payroll Shortcuts\"}},{\"id\":\"attend-section\",\"type\":\"header\",\"data\":{\"text\":\"Attendance & Expenses\",\"level\":4}},{\"id\":\"attend-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Attendance & Expenses Shortcuts\"}},{\"id\":\"guidelines-section\",\"type\":\"header\",\"data\":{\"text\":\"Guidelines & Policies\",\"level\":4}},{\"id\":\"guidelines-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Guidelines & Policies Shortcuts\"}}]",
+ "creation": "2026-04-02 00:00:00.000000",
+ "doctype": "Workspace",
+ "hide_custom": 0,
+ "is_hidden": 0,
+ "label": "Employee Self Service",
+ "modified": "2026-04-02 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Tripod HR",
+ "name": "Employee Self Service",
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "restrict_to_domain": "",
+ "roles": [
+  {
+   "role": "Employee Self Service"
+  },
+  {
+   "role": "Employee"
+  },
+  {
+   "role": "HR Manager"
+  },
+  {
+   "role": "HR User"
+  }
+ ],
+ "sequence_id": 1,
+ "shortcuts": [
+  {
+   "color": "Blue",
+   "doc_view": "List",
+   "icon": "calendar",
+   "label": "Leave Application",
+   "link_to": "Leave Application",
+   "type": "DocType"
+  },
+  {
+   "color": "Yellow",
+   "doc_view": "List",
+   "icon": "time",
+   "label": "Employee Advance",
+   "link_to": "Employee Advance",
+   "type": "DocType"
+  },
+  {
+   "color": "Blue",
+   "doc_view": "List",
+   "icon": "users",
+   "label": "Employee",
+   "link_to": "Employee",
+   "type": "DocType"
+  },
+  {
+   "color": "Purple",
+   "doc_view": "List",
+   "icon": "star",
+   "label": "Compensatory Leave Request",
+   "link_to": "Compensatory Leave Request",
+   "type": "DocType"
+  },
+  {
+   "color": "Green",
+   "doc_view": "List",
+   "icon": "check-circle",
+   "label": "Attendance",
+   "link_to": "Attendance",
+   "type": "DocType"
+  },
+  {
+   "color": "Red",
+   "doc_view": "List",
+   "icon": "file",
+   "label": "Expense Claim",
+   "link_to": "Expense Claim",
+   "type": "DocType"
+  },
+  {
+   "color": "Gray",
+   "doc_view": "List",
+   "icon": "file-text",
+   "label": "Documents Request Form",
+   "link_to": "Documents Request Form",
+   "type": "DocType"
+  },
+  {
+   "color": "Blue",
+   "doc_view": "List",
+   "icon": "calendar",
+   "label": "Appointment Guidelines",
+   "link_to": "Appointment Guideline",
+   "type": "DocType"
+  },
+  {
+   "color": "Green",
+   "doc_view": "List",
+   "icon": "file-text",
+   "label": "Company Policies",
+   "link_to": "Company Policy",
+   "type": "DocType"
+  }
+ ]
+}
