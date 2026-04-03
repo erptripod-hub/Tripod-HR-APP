@@ -52,17 +52,10 @@ def get_dashboard_data():
 		for dept in departments.values():
 			dept['avg_rating'] = sum(dept['ratings']) / len(dept['ratings']) if dept['ratings'] else 0
 		
-		# Get unique departments and cycles for filters
-		filters = {
-			'departments': sorted(list(set([a.department for a in appraisals if a.department]))),
-			'cycles': sorted(list(set([a.appraisal_cycle for a in appraisals if a.appraisal_cycle])))
-		}
-		
 		return {
 			'stats': stats,
 			'departments': list(departments.values()),
-			'employees': appraisals,
-			'filters': filters
+			'employees': appraisals
 		}
 	
 	except Exception as e:
@@ -70,6 +63,5 @@ def get_dashboard_data():
 		return {
 			'stats': {'total': 0, 'pending': 0, 'completed': 0, 'avg_rating': 0},
 			'departments': [],
-			'employees': [],
-			'filters': {'departments': [], 'cycles': []}
+			'employees': []
 		}
