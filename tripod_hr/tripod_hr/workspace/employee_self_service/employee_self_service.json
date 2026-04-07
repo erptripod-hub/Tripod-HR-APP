@@ -1,12 +1,12 @@
 {
  "charts": [],
  "content": "[]",
- "creation": "2026-04-07 00:00:00.000000",
+ "creation": "2026-04-02 00:00:00.000000",
  "doctype": "Workspace",
  "hide_custom": 0,
  "is_hidden": 0,
  "label": "Employee Self Service",
- "modified": "2026-04-07 12:00:00.000000",
+ "modified": "2026-04-07 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Tripod HR",
  "name": "Employee Self Service",
@@ -29,7 +29,7 @@
   {"color": "Green","doc_view": "List","icon": "check-circle","idx": 5,"label": "Attendance","link_to": "Attendance","type": "DocType"},
   {"color": "Red","doc_view": "List","icon": "file","idx": 6,"label": "Expense Claim","link_to": "Expense Claim","type": "DocType"},
   {"color": "Purple","doc_view": "List","icon": "star","idx": 7,"label": "Compensatory Leave...","link_to": "Compensatory Leave Request","type": "DocType"},
-  {"color": "Blue","doc_view": "List","icon": "calendar","idx": 8,"label": "Appointment Guidelines","link_to": "ess-guidelines","type": "Page"},
-  {"color": "Green","doc_view": "List","icon": "file-text","idx": 9,"label": "Company Policies","link_to": "ess-guidelines","type": "Page"}
+  {"color": "Blue","icon": "calendar","idx": 8,"label": "Appointment Guidelines","link_to": "ess-guidelines","type": "Page"},
+  {"color": "Green","icon": "file-text","idx": 9,"label": "Company Policies","link_to": "ess-guidelines","type": "Page"}
  ]
 }
