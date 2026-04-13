@@ -1,2 +1,2 @@
 tripod_hr.patches.import_ess_workspace
-tripod_hr.patches.install_ess_guidelines_page
+tripod_hr.patches.import_ess_workspace_v2
