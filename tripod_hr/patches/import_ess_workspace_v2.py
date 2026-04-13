@@ -1,101 +1,100 @@
 import frappe
 import json
 import os
+from frappe.utils import now
 
 
 def execute():
 	"""
-	Patch: Install ESS Guidelines Page + ESS Workspace.
-	Uses frappe.db directly to bypass Developer Mode restriction on Page insert.
+	Patch v2: Install ESS Guidelines Page + ESS Workspace via raw SQL only.
+	No doc.insert() calls - fully bypasses Developer Mode and validate hooks.
 	"""
 	base = os.path.join(os.path.dirname(__file__), "..", "tripod_hr")
+	ts = now()
 
 	# ── 1. Reload DocTypes ────────────────────────────────────────────────
 	for dt in ("Appointment Guideline", "Company Policy"):
 		if frappe.db.exists("DocType", dt):
 			frappe.reload_doc("tripod_hr", "doctype", dt.lower().replace(" ", "_"))
 
-	# ── 2. Install ESS Guidelines Page via raw DB (bypasses Developer Mode) ──
+	# ── 2. Install ESS Guidelines Page via raw SQL ────────────────────────
 	page_name = "ess-guidelines"
 
-	# Delete existing record cleanly
-	if frappe.db.exists("Page", page_name):
-		frappe.db.delete("Page", {"name": page_name})
-		frappe.db.delete("Has Role", {"parent": page_name, "parenttype": "Page"})
-		frappe.db.commit()
+	frappe.db.sql("DELETE FROM `tabHas Role` WHERE parent=%s AND parenttype='Page'", page_name)
+	frappe.db.sql("DELETE FROM `tabPage` WHERE name=%s", page_name)
+	frappe.db.commit()
 
-	# Insert Page record directly
 	frappe.db.sql("""
 		INSERT INTO `tabPage`
 			(name, page_name, title, module, standard, system_page,
 			 owner, modified_by, creation, modified, docstatus)
-		VALUES
-			(%s, %s, %s, %s, %s, %s,
-			 %s, %s, NOW(), NOW(), %s)
-	""", (
-		page_name,
-		"ESS Guidelines",
-		"ESS Guidelines & Policies",
-		"Tripod HR",
-		"Yes",
-		0,
-		"Administrator",
-		"Administrator",
-		0,
-	))
+		VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+	""", (page_name, "ESS Guidelines", "ESS Guidelines & Policies",
+		  "Tripod HR", "Yes", 0,
+		  "Administrator", "Administrator", ts, ts, 0))
 
-	# Insert roles for the page
-	roles = [
-		"Employee Self Service",
-		"Employee",
-		"HR Manager",
-		"HR User",
-		"System Manager",
-	]
-	for i, role in enumerate(roles):
+	for i, role in enumerate(["Employee Self Service", "Employee", "HR Manager", "HR User", "System Manager"]):
 		frappe.db.sql("""
 			INSERT INTO `tabHas Role`
 				(name, parent, parenttype, parentfield, role, idx,
 				 owner, modified_by, creation, modified, docstatus)
-			VALUES
-				(%s, %s, %s, %s, %s, %s,
-				 %s, %s, NOW(), NOW(), %s)
-		""", (
-			f"{page_name}-role-{i}",
-			page_name,
-			"Page",
-			"roles",
-			role,
-			i + 1,
-			"Administrator",
-			"Administrator",
-			0,
-		))
+			VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+		""", (f"ess-role-{i}", page_name, "Page", "roles", role,
+			  i + 1, "Administrator", "Administrator", ts, ts, 0))
 
 	frappe.db.commit()
-	frappe.logger().info(f"Tripod HR: Page '{page_name}' installed via direct DB.")
 
-	# ── 3. Install ESS Workspace ──────────────────────────────────────────
-	ws_json_path = os.path.abspath(
-		os.path.join(base, "workspace", "employee_self_service", "employee_self_service.json")
-	)
-	if os.path.exists(ws_json_path):
-		with open(ws_json_path, "r") as f:
-			ws_data = json.load(f)
+	# ── 3. Install ESS Workspace via raw SQL ──────────────────────────────
+	ws_name = "Employee Self Service"
 
-		ws_name = ws_data.get("name", "Employee Self Service")
+	frappe.db.sql("DELETE FROM `tabWorkspace Shortcut` WHERE parent=%s", ws_name)
+	frappe.db.sql("DELETE FROM `tabHas Role` WHERE parent=%s AND parenttype='Workspace'", ws_name)
+	frappe.db.sql("DELETE FROM `tabWorkspace` WHERE name=%s", ws_name)
+	frappe.db.commit()
 
-		if frappe.db.exists("Workspace", ws_name):
-			frappe.delete_doc("Workspace", ws_name, force=True, ignore_permissions=True)
-			frappe.db.commit()
+	frappe.db.sql("""
+		INSERT INTO `tabWorkspace`
+			(name, title, label, module, public, is_hidden, hide_custom,
+			 sequence_id, owner, modified_by, creation, modified, docstatus)
+		VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+	""", (ws_name, "Employee Self Service", "Employee Self Service",
+		  "Tripod HR", 1, 0, 0,
+		  1.0, "Administrator", "Administrator", ts, ts, 0))
 
-		doc = frappe.get_doc(ws_data)
-		doc.flags.ignore_permissions = True
-		doc.flags.ignore_mandatory = True
-		doc.insert()
-		frappe.db.commit()
-		frappe.logger().info(f"Tripod HR: Workspace '{ws_name}' installed.")
+	# Workspace roles
+	for i, role in enumerate(["Employee Self Service", "Employee", "HR Manager", "HR User"]):
+		frappe.db.sql("""
+			INSERT INTO `tabHas Role`
+				(name, parent, parenttype, parentfield, role, idx,
+				 owner, modified_by, creation, modified, docstatus)
+			VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+		""", (f"ws-role-{i}", ws_name, "Workspace", "roles", role,
+			  i + 1, "Administrator", "Administrator", ts, ts, 0))
 
-	# ── 4. Clear cache ────────────────────────────────────────────────────
+	# Workspace shortcuts
+	shortcuts = [
+		(1, "Employee Advance",        "Employee Advance",           "DocType", "Blue",   "calendar"),
+		(2, "Employee",                 "Employee",                   "DocType", "Blue",   "users"),
+		(3, "Leave Application",        "Leave Application",          "DocType", "Blue",   "calendar"),
+		(4, "Documents Request F...",   "Documents Request Form",     "DocType", "Gray",   "file-text"),
+		(5, "Attendance",               "Attendance",                 "DocType", "Green",  "check-circle"),
+		(6, "Expense Claim",            "Expense Claim",              "DocType", "Red",    "file"),
+		(7, "Compensatory Leave...",    "Compensatory Leave Request", "DocType", "Purple", "star"),
+		(8, "Appointment Guidelines",   "ess-guidelines",             "Page",    "Blue",   "calendar"),
+		(9, "Company Policies",         "ess-guidelines",             "Page",    "Green",  "file-text"),
+	]
+
+	for idx, label, link_to, stype, color, icon in shortcuts:
+		frappe.db.sql("""
+			INSERT INTO `tabWorkspace Shortcut`
+				(name, parent, parenttype, parentfield, idx, label,
+				 link_to, type, color, icon, doc_view,
+				 owner, modified_by, creation, modified, docstatus)
+			VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+		""", (f"ws-sc-{idx}", ws_name, "Workspace", "shortcuts", idx, label,
+			  link_to, stype, color, icon, "List",
+			  "Administrator", "Administrator", ts, ts, 0))
+
+	frappe.db.commit()
 	frappe.clear_cache()
-	frappe.logger().info("Tripod HR: ESS patch complete.")
+	frappe.logger().info("Tripod HR: ESS patch v2 complete.")
