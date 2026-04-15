@@ -68,7 +68,8 @@
   "areas_for_development",
   "section_break_hr",
   "hr_decision",
-  "hr_remarks"
+  "hr_remarks",
+  "workflow_state"
  ],
  "fields": [
   {
@@ -407,6 +408,13 @@
    "fieldname": "hr_remarks",
    "fieldtype": "Text",
    "label": "HR Remarks"
+  },
+  {
+   "fieldname": "workflow_state",
+   "fieldtype": "Link",
+   "label": "Workflow State",
+   "options": "Workflow State",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
