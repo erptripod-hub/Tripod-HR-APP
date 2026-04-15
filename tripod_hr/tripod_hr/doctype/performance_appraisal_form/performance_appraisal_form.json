@@ -97,7 +97,6 @@
    "read_only": 1
   },
   {
-   "fetch_from": "employee.custom_employee_number",
    "fieldname": "employee_number",
    "fieldtype": "Data",
    "label": "Employee Number",
