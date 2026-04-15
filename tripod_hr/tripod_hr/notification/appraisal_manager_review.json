@@ -1,0 +1,25 @@
+{
+ "channel": "Email",
+ "condition": "doc.workflow_state == 'Manager Review'",
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Performance Appraisal Form",
+ "enabled": 1,
+ "event": "Value Change",
+ "is_standard": 1,
+ "message": "Performance appraisal for {{ doc.employee_name }} ({{ doc.employee }}) is ready for your review.\n\nAppraisal Cycle: {{ doc.appraisal_cycle }}\nReview Period: {{ doc.review_period }}\n\nPlease log in to review and add ratings.",
+ "modified": "2026-04-03 08:30:00.000000",
+ "modified_by": "Administrator",
+ "name": "Appraisal - Manager Review",
+ "owner": "Administrator",
+ "property_value": "workflow_state",
+ "recipients": [
+  {
+   "receiver_by_document_field": "line_manager"
+  }
+ ],
+ "send_system_notification": 0,
+ "sender": "",
+ "sender_email": "",
+ "subject": "Performance Appraisal Ready for Review - {{ doc.employee_name }}"
+}

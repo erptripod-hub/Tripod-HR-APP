@@ -1,0 +1,25 @@
+{
+ "channel": "Email",
+ "condition": "doc.workflow_state == 'Employee Review'",
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Performance Appraisal Form",
+ "enabled": 1,
+ "event": "Value Change",
+ "is_standard": 1,
+ "message": "Your performance appraisal for {{ doc.appraisal_cycle }} has been reviewed by your manager.\n\nReview Period: {{ doc.review_period }}\n\nPlease log in to review your appraisal and add your acknowledgment.",
+ "modified": "2026-04-03 08:30:00.000000",
+ "modified_by": "Administrator",
+ "name": "Appraisal - Employee Review",
+ "owner": "Administrator",
+ "property_value": "workflow_state",
+ "recipients": [
+  {
+   "receiver_by_document_field": "employee"
+  }
+ ],
+ "send_system_notification": 0,
+ "sender": "",
+ "sender_email": "",
+ "subject": "Your Performance Appraisal is Ready for Review - {{ doc.appraisal_cycle }}"
+}

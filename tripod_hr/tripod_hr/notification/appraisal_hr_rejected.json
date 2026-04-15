@@ -1,0 +1,25 @@
+{
+ "channel": "Email",
+ "condition": "doc.workflow_state == 'Manager Review' and doc._workflow_state != 'Draft'",
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Performance Appraisal Form",
+ "enabled": 1,
+ "event": "Value Change",
+ "is_standard": 1,
+ "message": "The performance appraisal for {{ doc.employee_name }} ({{ doc.employee }}) has been returned by HR for revision.\n\nAppraisal Cycle: {{ doc.appraisal_cycle }}\n\nHR Remarks: {{ doc.hr_remarks }}\n\nPlease log in to review and update the appraisal.",
+ "modified": "2026-04-03 08:30:00.000000",
+ "modified_by": "Administrator",
+ "name": "Appraisal - Rejected by HR",
+ "owner": "Administrator",
+ "property_value": "workflow_state",
+ "recipients": [
+  {
+   "receiver_by_document_field": "line_manager"
+  }
+ ],
+ "send_system_notification": 0,
+ "sender": "",
+ "sender_email": "",
+ "subject": "Performance Appraisal Returned for Revision - {{ doc.employee_name }}"
+}
