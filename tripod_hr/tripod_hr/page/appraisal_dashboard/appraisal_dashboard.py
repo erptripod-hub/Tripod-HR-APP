@@ -12,6 +12,16 @@ def get_dashboard_data():
 			order_by='modified desc'
 		)
 		
+		# Fix null employee names by fetching from Employee master
+		for appraisal in appraisals:
+			if not appraisal.employee_name and appraisal.employee:
+				emp_data = frappe.db.get_value('Employee', appraisal.employee, 
+					['employee_name', 'department'], as_dict=True)
+				if emp_data:
+					appraisal.employee_name = emp_data.employee_name
+					if not appraisal.department:
+						appraisal.department = emp_data.department
+		
 		# Calculate statistics
 		stats = {
 			'total': len(appraisals),
