@@ -5,15 +5,19 @@ def get_dashboard_data():
 	"""Get all data for the appraisal dashboard"""
 	
 	try:
-		# Get all appraisals
+		# Get all appraisals - using only confirmed existing fields
 		appraisals = frappe.get_all('Performance Appraisal Form',
-			fields=['name', 'employee', 'employee_name', 'employee_number', 'department', 
-					'appraisal_cycle', 'overall_rating', 'docstatus', 'review_period'],
+			fields=['name', 'employee', 'employee_name', 'department', 
+					'appraisal_cycle', 'docstatus', 'review_period'],
 			order_by='modified desc'
 		)
 		
-		# Fix null employee names by fetching from Employee master
+		# Fetch overall_rating separately to avoid field errors
 		for appraisal in appraisals:
+			doc = frappe.get_doc('Performance Appraisal Form', appraisal.name)
+			appraisal.overall_rating = doc.get('overall_rating')
+			
+			# Fix null employee names by fetching from Employee master
 			if not appraisal.employee_name and appraisal.employee:
 				emp_data = frappe.db.get_value('Employee', appraisal.employee, 
 					['employee_name', 'department'], as_dict=True)
