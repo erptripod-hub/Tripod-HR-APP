@@ -15,6 +15,7 @@
   "department",
   "designation",
   "line_manager",
+  "line_manager_name",
   "column_break_1",
   "review_period",
   "annual_target",
@@ -123,8 +124,16 @@
    "fetch_from": "employee.reports_to",
    "fieldname": "line_manager",
    "fieldtype": "Link",
-   "label": "Line Manager",
+   "label": "Line Manager ID",
    "options": "Employee",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fetch_from": "employee.custom_reports_to_name",
+   "fieldname": "line_manager_name",
+   "fieldtype": "Data",
+   "label": "Line Manager",
    "read_only": 1
   },
   {
