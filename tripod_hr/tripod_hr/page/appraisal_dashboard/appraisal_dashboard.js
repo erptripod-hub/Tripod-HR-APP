@@ -93,9 +93,11 @@ frappe.pages['appraisal-dashboard'].on_page_load = function(wrapper) {
 			html += '<tbody>';
 			
 			dept.employees.forEach(function(emp) {
-				var statusBadge = emp.docstatus === 1 ? 
-					'<span class="badge success">Completed</span>' : 
-					'<span class="badge warning">Pending</span>';
+				// Show workflow state instead of generic status
+				var workflowState = emp.workflow_state || 'Draft';
+				var statusClass = workflowState === 'Completed' ? 'success' : 'warning';
+				var statusBadge = '<span class="badge ' + statusClass + '">' + workflowState + '</span>';
+				
 				var rating = emp.overall_rating || 0;
 				var ratingColor = rating >= 4 ? '#27ae60' : rating >= 3 ? '#f39c12' : '#e74c3c';
 				var ratingBadge = emp.overall_rating ? 

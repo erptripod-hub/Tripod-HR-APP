@@ -8,7 +8,7 @@ def get_dashboard_data():
 		# Get all appraisals - using only confirmed existing fields
 		appraisals = frappe.get_all('Performance Appraisal Form',
 			fields=['name', 'employee', 'employee_name', 'department', 
-					'appraisal_cycle', 'docstatus', 'review_period'],
+					'appraisal_cycle', 'workflow_state', 'docstatus', 'review_period'],
 			order_by='modified desc'
 		)
 		
@@ -26,11 +26,11 @@ def get_dashboard_data():
 					if not appraisal.department:
 						appraisal.department = emp_data.department
 		
-		# Calculate statistics
+		# Calculate statistics based on workflow_state
 		stats = {
 			'total': len(appraisals),
-			'pending': len([a for a in appraisals if a.docstatus == 0]),
-			'completed': len([a for a in appraisals if a.docstatus == 1]),
+			'pending': len([a for a in appraisals if a.workflow_state != 'Completed']),
+			'completed': len([a for a in appraisals if a.workflow_state == 'Completed']),
 			'avg_rating': 0
 		}
 		
@@ -55,7 +55,7 @@ def get_dashboard_data():
 			
 			departments[dept]['employees'].append(appraisal)
 			departments[dept]['total'] += 1
-			if appraisal.docstatus == 1:
+			if appraisal.workflow_state == 'Completed':
 				departments[dept]['completed'] += 1
 			else:
 				departments[dept]['pending'] += 1
