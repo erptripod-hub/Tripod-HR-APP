@@ -15,6 +15,7 @@ ACTUAL_COMPONENTS = [
     "Cost of Living Allowance",
     "Fuel Allowance",
     "Other Allowance",
+    "Other Allowances",
     "Car Allowance",
     "Mobile Allowance",
 ]
@@ -25,6 +26,7 @@ ALLOWED_NON_BASIC = [
     "Cost of Living Allowance",
     "Fuel Allowance",
     "Other Allowance",
+    "Other Allowances",
     "Car Allowance",
     "Mobile Allowance",
 ]
