@@ -737,5 +737,7 @@
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
- "track_changes": 1
+ "track_changes": 1,
+ "editable_grid": 1,
+ "index_web_pages_for_search": 1
 }

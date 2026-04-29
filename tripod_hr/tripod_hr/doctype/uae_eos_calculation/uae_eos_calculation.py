@@ -113,10 +113,10 @@ class UAEEOSCalculation(Document):
 		# Skip auto-calc if user has overridden
 		if self.override_gratuity or self.calculation_mode == "Manual":
 			# Still set the days_per_year display field for reference
-			years = flt(self.employment_years)
-			if years < 1:
+			days_int = cint(self.total_service_days)
+			if days_int < 365:
 				self.gratuity_days_per_year = 0
-			elif years <= 5:
+			elif days_int <= 1826:
 				self.gratuity_days_per_year = 21
 			else:
 				self.gratuity_days_per_year = 30
@@ -127,11 +127,13 @@ class UAEEOSCalculation(Document):
 		daily = flt(self.daily_basic_wage)
 
 		# UAE Gratuity Rules
-		if years < 1:
+		# Use day count as threshold (365 days = 1 year completed) to avoid
+		# float precision issues with 365.25 conversion
+		if days < 365:
 			# No gratuity entitlement under 1 year of continuous service
 			self.gratuity_days_per_year = 0
 			gratuity = 0
-		elif years <= 5:
+		elif days <= 1826:  # up to and including 5 years (5 x 365.25 = 1826.25)
 			# 21 days basic per year for first 5 years (pro-rata by exact days)
 			self.gratuity_days_per_year = 21
 			gratuity = daily * 21 * (days / 365.25)
@@ -292,6 +294,9 @@ def get_employee_details(employee):
 	if not employee:
 		return {}
 
+	if not frappe.db.exists("Employee", employee):
+		frappe.throw(_("Employee {0} not found").format(employee))
+
 	emp = frappe.get_doc("Employee", employee)
 
 	data = {
@@ -309,12 +314,15 @@ def get_employee_details(employee):
 	}
 
 	# Get latest salary structure assignment to fetch components
-	ssa = frappe.db.get_value(
-		"Salary Structure Assignment",
-		{"employee": employee, "docstatus": 1},
-		["name", "base", "salary_structure"],
-		order_by="from_date desc",
-	)
+	try:
+		ssa = frappe.db.get_value(
+			"Salary Structure Assignment",
+			{"employee": employee, "docstatus": 1},
+			["name", "base", "salary_structure"],
+			order_by="from_date desc",
+		)
+	except Exception:
+		ssa = None
 
 	if ssa:
 		ssa_name, base, structure = ssa
@@ -329,15 +337,17 @@ def get_employee_details(employee):
 
 		basic = housing = transport = other = 0
 		for row in earnings:
-			comp_lower = (row.salary_component or "").lower()
+			comp = (row.salary_component or "").strip()
+			comp_lower = comp.lower()
 			amt = flt(row.amount)
-			if "basic" in comp_lower:
+			if comp_lower == "basic" or "basic" in comp_lower:
 				basic += amt
-			elif "housing" in comp_lower or "house" in comp_lower or "accommodation" in comp_lower:
+			elif comp == "HRA" or "hra" in comp_lower or "housing" in comp_lower or "house" in comp_lower or "accommodation" in comp_lower:
 				housing += amt
 			elif "transport" in comp_lower or "conveyance" in comp_lower:
 				transport += amt
 			else:
+				# Cost of Living, Fuel, Other, Car, Mobile, etc. → Other Allowance
 				other += amt
 
 		# If components were not picked individually, dump base into basic
@@ -351,38 +361,47 @@ def get_employee_details(employee):
 
 	# Get leave balance for paid leave types
 	leave_balance = 0
-	leaves = frappe.db.sql("""
-		SELECT SUM(la.total_leaves_allocated)
-		FROM `tabLeave Allocation` la
-		WHERE la.employee = %s
-		AND la.docstatus = 1
-		AND la.from_date <= CURDATE()
-		AND la.to_date >= CURDATE()
-	""", employee)
-	if leaves and leaves[0][0]:
-		leave_balance = flt(leaves[0][0])
+	try:
+		leaves = frappe.db.sql("""
+			SELECT SUM(la.total_leaves_allocated)
+			FROM `tabLeave Allocation` la
+			WHERE la.employee = %s
+			AND la.docstatus = 1
+			AND la.from_date <= CURDATE()
+			AND la.to_date >= CURDATE()
+		""", employee)
+		if leaves and leaves[0][0]:
+			leave_balance = flt(leaves[0][0])
 
-	leaves_taken = frappe.db.sql("""
-		SELECT SUM(la.total_leave_days)
-		FROM `tabLeave Application` la
-		WHERE la.employee = %s
-		AND la.docstatus = 1
-		AND la.status = 'Approved'
-	""", employee)
-	if leaves_taken and leaves_taken[0][0]:
-		leave_balance -= flt(leaves_taken[0][0])
+		leaves_taken = frappe.db.sql("""
+			SELECT SUM(la.total_leave_days)
+			FROM `tabLeave Application` la
+			WHERE la.employee = %s
+			AND la.docstatus = 1
+			AND la.status = 'Approved'
+		""", employee)
+		if leaves_taken and leaves_taken[0][0]:
+			leave_balance -= flt(leaves_taken[0][0])
+	except Exception:
+		# Leave doctypes may not exist or permission issue; let user fill manually
+		leave_balance = 0
 
 	data["leaves_balance"] = leave_balance if leave_balance > 0 else 0
 
-	# Active loan recovery
-	active_loan = frappe.db.sql("""
-		SELECT SUM(l.outstanding_amount)
-		FROM `tabLoan` l
-		WHERE l.applicant = %s
-		AND l.docstatus = 1
-		AND l.status NOT IN ('Closed', 'Settled')
-	""", employee)
-	if active_loan and active_loan[0][0]:
-		data["loan_advance_recovery"] = flt(active_loan[0][0])
+	# Active loan recovery (Loan doctype may live in HRMS or separate Lending app in v14)
+	try:
+		if frappe.db.exists("DocType", "Loan"):
+			active_loan = frappe.db.sql("""
+				SELECT SUM(l.outstanding_amount)
+				FROM `tabLoan` l
+				WHERE l.applicant = %s
+				AND l.docstatus = 1
+				AND l.status NOT IN ('Closed', 'Settled')
+			""", employee)
+			if active_loan and active_loan[0][0]:
+				data["loan_advance_recovery"] = flt(active_loan[0][0])
+	except Exception:
+		# Loan doctype not present or schema differs; let user fill manually
+		pass
 
 	return data

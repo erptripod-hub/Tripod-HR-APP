@@ -192,20 +192,21 @@ frappe.ui.form.on('UAE EOS Calculation', {
         const days = flt(frm.doc.total_service_days);
         const daily = base / 30;
 
-        // Set days_per_year display
+        // Set days_per_year display - use day count to avoid float precision
         let dpy = 0;
-        if (years < 1) dpy = 0;
-        else if (years <= 5) dpy = 21;
+        if (days < 365) dpy = 0;
+        else if (days <= 1826) dpy = 21;
         else dpy = 30;
+        frm.set_df_property('gratuity_days_per_year', 'read_only', 1);
         frm.set_value('gratuity_days_per_year', dpy);
 
         // Skip auto-calc if overridden
         if (frm.doc.override_gratuity || frm.doc.calculation_mode === 'Manual') return;
 
         let gratuity = 0;
-        if (years < 1) {
+        if (days < 365) {
             gratuity = 0;
-        } else if (years <= 5) {
+        } else if (days <= 1826) {
             gratuity = daily * 21 * (days / 365.25);
         } else {
             const first_five_days = 5 * 365.25;
