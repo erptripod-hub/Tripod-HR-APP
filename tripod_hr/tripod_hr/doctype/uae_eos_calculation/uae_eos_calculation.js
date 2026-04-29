@@ -94,10 +94,23 @@ frappe.ui.form.on('UAE EOS Calculation', {
 
                 // Trigger downstream calcs
                 frm.trigger('recalculate_all');
+
+                let msg = __('Employee details fetched successfully');
+                if (d._salary_source) {
+                    msg += '<br><small>Salary source: ' + d._salary_source + '</small>';
+                }
                 frappe.show_alert({
-                    message: __('Employee details fetched successfully'),
-                    indicator: 'green'
-                });
+                    message: msg,
+                    indicator: (d.basic_salary > 0) ? 'green' : 'orange'
+                }, 7);
+
+                if (!d.basic_salary || d.basic_salary === 0) {
+                    frappe.msgprint({
+                        title: __('Salary Not Auto-Fetched'),
+                        message: __('No salary structure or salary slip found for this employee. Please enter Basic Salary, Housing, Transportation, and Other Allowance manually.'),
+                        indicator: 'orange'
+                    });
+                }
             }
         });
     },

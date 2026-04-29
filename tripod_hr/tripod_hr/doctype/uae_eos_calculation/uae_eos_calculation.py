@@ -313,51 +313,88 @@ def get_employee_details(employee):
 		"iban": getattr(emp, "iban", None),
 	}
 
-	# Get latest salary structure assignment to fetch components
+	# Strategy: Get salary from latest submitted Salary Slip (always has actual amounts).
+	# Fallback: Salary Structure Assignment (may have 0 amounts if formula-based).
+	basic = housing = transport = other = 0
+	salary_source = None
+
+	# --- Strategy 1: Latest submitted Salary Slip ---
 	try:
-		ssa = frappe.db.get_value(
-			"Salary Structure Assignment",
+		latest_slip = frappe.db.get_value(
+			"Salary Slip",
 			{"employee": employee, "docstatus": 1},
-			["name", "base", "salary_structure"],
-			order_by="from_date desc",
+			["name", "gross_pay", "base_gross_pay"],
+			order_by="end_date desc",
 		)
-	except Exception:
-		ssa = None
+		if latest_slip:
+			slip_name = latest_slip[0]
+			earnings = frappe.get_all(
+				"Salary Detail",
+				filters={"parent": slip_name, "parentfield": "earnings"},
+				fields=["salary_component", "amount"],
+			)
+			for row in earnings:
+				comp = (row.salary_component or "").strip()
+				comp_lower = comp.lower()
+				amt = flt(row.amount)
+				if comp_lower == "basic" or comp_lower.startswith("basic"):
+					basic += amt
+				elif comp == "HRA" or "hra" in comp_lower or "housing" in comp_lower or "house" in comp_lower or "accommodation" in comp_lower:
+					housing += amt
+				elif "transport" in comp_lower or "conveyance" in comp_lower:
+					transport += amt
+				else:
+					other += amt
+			if basic or housing or transport or other:
+				salary_source = "Salary Slip"
+	except Exception as e:
+		frappe.log_error(f"EOS salary slip fetch error: {e}", "UAE EOS Calculation")
 
-	if ssa:
-		ssa_name, base, structure = ssa
-		data["base_salary"] = flt(base)
+	# --- Strategy 2: Fallback to Salary Structure Assignment ---
+	if not (basic or housing or transport or other):
+		try:
+			ssa = frappe.db.get_value(
+				"Salary Structure Assignment",
+				{"employee": employee, "docstatus": 1},
+				["name", "base", "salary_structure"],
+				order_by="from_date desc",
+			)
+			if ssa:
+				ssa_name, base, structure = ssa
+				data["base_salary"] = flt(base)
 
-		# Pull earnings from the Salary Structure
-		earnings = frappe.get_all(
-			"Salary Detail",
-			filters={"parent": structure, "parentfield": "earnings"},
-			fields=["salary_component", "amount", "amount_based_on_formula", "formula"],
-		)
+				earnings = frappe.get_all(
+					"Salary Detail",
+					filters={"parent": structure, "parentfield": "earnings"},
+					fields=["salary_component", "amount", "amount_based_on_formula", "formula"],
+				)
+				for row in earnings:
+					comp = (row.salary_component or "").strip()
+					comp_lower = comp.lower()
+					amt = flt(row.amount)
+					if comp_lower == "basic" or comp_lower.startswith("basic"):
+						basic += amt
+					elif comp == "HRA" or "hra" in comp_lower or "housing" in comp_lower or "house" in comp_lower or "accommodation" in comp_lower:
+						housing += amt
+					elif "transport" in comp_lower or "conveyance" in comp_lower:
+						transport += amt
+					else:
+						other += amt
 
-		basic = housing = transport = other = 0
-		for row in earnings:
-			comp = (row.salary_component or "").strip()
-			comp_lower = comp.lower()
-			amt = flt(row.amount)
-			if comp_lower == "basic" or "basic" in comp_lower:
-				basic += amt
-			elif comp == "HRA" or "hra" in comp_lower or "housing" in comp_lower or "house" in comp_lower or "accommodation" in comp_lower:
-				housing += amt
-			elif "transport" in comp_lower or "conveyance" in comp_lower:
-				transport += amt
-			else:
-				# Cost of Living, Fuel, Other, Car, Mobile, etc. → Other Allowance
-				other += amt
+				# If structure components are formula-based (amount=0), use base as Basic
+				if base and not (basic or housing or transport or other):
+					basic = flt(base)
+					salary_source = "Structure Base (formula-based components)"
+				elif basic or housing or transport or other:
+					salary_source = "Salary Structure"
+		except Exception as e:
+			frappe.log_error(f"EOS SSA fetch error: {e}", "UAE EOS Calculation")
 
-		# If components were not picked individually, dump base into basic
-		if base and not basic:
-			basic = base
-
-		data["basic_salary"] = basic
-		data["housing_allowance"] = housing
-		data["transportation_allowance"] = transport
-		data["other_allowance"] = other
+	data["basic_salary"] = basic
+	data["housing_allowance"] = housing
+	data["transportation_allowance"] = transport
+	data["other_allowance"] = other
+	data["_salary_source"] = salary_source or "Not found - please enter manually"
 
 	# Get leave balance for paid leave types
 	leave_balance = 0
