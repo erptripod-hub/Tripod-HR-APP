@@ -1,0 +1,24 @@
+{
+ "channel": "Email",
+ "condition": "",
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Idea Vault",
+ "enabled": 1,
+ "event": "New",
+ "is_standard": 1,
+ "message": "Hello HR Team,\n\nA new idea has been submitted to the Idea Vault.\n\nTitle: {{ doc.title }}\nSubmitted By: {{ doc.submitted_by }}\nDepartment: {{ doc.department or 'Not specified' }}\nCategory: {{ doc.category or 'Not specified' }}\nSubmitted On: {{ doc.submitted_on }}\n\nIdea Details:\n{{ doc.idea_details }}\n\nPlease log in to ERPNext to review this submission.\n\nLink: {{ frappe.utils.get_url() }}/app/idea-vault/{{ doc.name }}\n\nBest regards,\nTripod HR System",
+ "modified": "2026-05-19 10:00:00.000000",
+ "modified_by": "Administrator",
+ "name": "Idea Vault - New Submission",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "receiver_by_role": "HR Manager"
+  }
+ ],
+ "send_system_notification": 1,
+ "sender": "",
+ "sender_email": "",
+ "subject": "New Idea Submitted: {{ doc.title }}"
+}
