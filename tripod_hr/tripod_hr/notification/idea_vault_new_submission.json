@@ -15,9 +15,6 @@
  "recipients": [
   {
    "receiver_by_role": "HR Manager"
-  },
-  {
-   "receiver_by_role": "HR User"
   }
  ],
  "send_system_notification": 1,
