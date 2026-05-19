@@ -6,7 +6,7 @@
  "hide_custom": 0,
  "is_hidden": 0,
  "label": "Employee Self Service",
- "modified": "2026-05-19 10:00:00.000000",
+ "modified": "2026-04-14 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Tripod HR",
  "name": "Employee Self Service",
@@ -30,7 +30,6 @@
   {"color": "Red","doc_view": "List","icon": "file","idx": 6,"label": "Expense Claim","link_to": "Expense Claim","type": "DocType"},
   {"color": "Purple","doc_view": "List","icon": "star","idx": 7,"label": "Compensatory Leave...","link_to": "Compensatory Leave Request","type": "DocType"},
   {"color": "Blue","doc_view": "List","icon": "calendar","idx": 8,"label": "Appointment Guidelines","link_to": "Appointment Guideline","type": "DocType"},
-  {"color": "Green","doc_view": "List","icon": "file-text","idx": 9,"label": "Company Policies","link_to": "Company Policy","type": "DocType"},
-  {"color": "Orange","doc_view": "List","icon": "small-message","idx": 10,"label": "Idea Vault","link_to": "Idea Vault","type": "DocType"}
+  {"color": "Green","doc_view": "List","icon": "file-text","idx": 9,"label": "Company Policies","link_to": "Company Policy","type": "DocType"}
  ]
 }
