@@ -34,8 +34,12 @@ def get_annual_leave_type(company, employment_type):
     region = COMPANY_REGION.get(company)
     
     if region == "KSA":
-        # KSA: Same for all (30 days / 2.5 per month)
-        return "Annual Leave KSA Office"
+        if employment_type == "Office Staff":
+            # KSA Office Staff: 30 days / 2.5 per month
+            return "Annual Leave KSA Office"
+        else:
+            # KSA Labour/Workers: 30 days / 2.5 per month
+            return "Annual Leave KSA Workers"
     elif region == "UAE":
         if employment_type == "Office Staff":
             # UAE Office Staff: 22 days / 1.833 per month
@@ -210,9 +214,31 @@ def allocate_annual_leave(emp):
     if existing:
         return {"allocated": False, "message": "Annual Leave already allocated"}
     
+    # Calculate initial balance based on months since joining
+    from_date = getdate(emp.date_of_joining)
+    today = getdate(nowdate())
+    
+    # Calculate months worked (including partial month)
+    months_worked = (today.year - from_date.year) * 12 + (today.month - from_date.month)
+    # Add partial month based on days
+    days_in_month = 30
+    partial_month = (today.day + (days_in_month - from_date.day)) / days_in_month
+    if partial_month > 1:
+        partial_month = 1
+    months_worked = months_worked + partial_month
+    
+    # Determine rate based on leave type
+    if leave_type == "Annual Leave Office UAE":
+        rate = 1.833  # 22 days / 12 months
+    else:
+        rate = 2.5  # 30 days / 12 months
+    
+    # Calculate initial allocation
+    initial_balance = round(months_worked * rate, 3)
+    
     # Create Annual Leave Allocation
     # From joining date to 2099-12-31
-    # ERPNext earned leave will handle monthly accrual
+    # ERPNext earned leave will handle monthly accrual going forward
     alloc = frappe.get_doc({
         "doctype": "Leave Allocation",
         "employee": emp.name,
@@ -220,14 +246,14 @@ def allocate_annual_leave(emp):
         "leave_type": leave_type,
         "from_date": emp.date_of_joining,
         "to_date": "2099-12-31",
-        "new_leaves_allocated": 0,  # ERPNext earned leave adds monthly
-        "total_leaves_allocated": 0,
+        "new_leaves_allocated": initial_balance,
+        "total_leaves_allocated": initial_balance,
         "carry_forward": 0
     })
     alloc.insert(ignore_permissions=True)
     alloc.submit()
     
-    return {"allocated": True, "message": "Annual Leave allocated"}
+    return {"allocated": True, "message": f"Annual Leave allocated: {initial_balance} days"}
 
 
 @frappe.whitelist()
