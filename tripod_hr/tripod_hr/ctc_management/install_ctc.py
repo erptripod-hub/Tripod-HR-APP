@@ -40,25 +40,30 @@ BRANCH_DEFAULTS = [
 
 
 def execute():
-    """Main entry point. Runs all 4 steps with progress output."""
+    """Main entry point. Runs all 5 steps with progress output."""
     print("\n" + "="*70)
     print("CTC INSTALLER — running all steps")
     print("="*70)
 
-    print("\n[1/4] Creating custom fields on Employee + SSA...")
+    print("\n[1/5] Ensuring required doctypes exist...")
+    dt_result = _ensure_doctypes()
+    print(f"      OK — {dt_result['imported']} imported, "
+          f"{dt_result['existing']} already existed")
+
+    print("\n[2/5] Creating custom fields on Employee + SSA...")
     created = _install_custom_fields()
     print(f"      OK — {created['created']} created, {created['updated']} updated")
 
-    print("\n[2/4] Seeding CTC Component Defaults (9 branches)...")
+    print("\n[3/5] Seeding CTC Component Defaults (9 branches)...")
     seeded = _seed_ctc_defaults()
     print(f"      OK — {seeded} branches configured")
 
-    print("\n[3/4] Populating CTC fields on existing employees...")
+    print("\n[4/5] Populating CTC fields on existing employees...")
     populated = _populate_existing_employees()
     print(f"      OK — {populated['processed']} processed, "
           f"{populated['errors']} errors")
 
-    print("\n[4/4] Clearing cache...")
+    print("\n[5/5] Clearing cache...")
     frappe.clear_cache()
     print("      OK")
 
@@ -67,6 +72,47 @@ def execute():
     print("Now hard-refresh your browser (Ctrl+Shift+R) on the Employee form.")
     print("Make sure HR Manager role has Permission Level 1 on Employee + SSA.")
     print("="*70 + "\n")
+
+
+def _ensure_doctypes():
+    """Step 0: ensure CTC Component Default + Employee Deployment History exist.
+    
+    If they don't, import them from the doctype folder JSON files using
+    frappe.modules.import_file.import_file_by_path — the same function
+    bench migrate uses to load doctypes from disk.
+    """
+    from frappe.modules.import_file import import_file_by_path
+
+    base = os.path.dirname(__file__)
+    doctypes_to_check = [
+        ("CTC Component Default",
+         os.path.join(base, "doctype", "ctc_component_default",
+                      "ctc_component_default.json")),
+        ("Employee Deployment History",
+         os.path.join(base, "doctype", "employee_deployment_history",
+                      "employee_deployment_history.json")),
+    ]
+
+    imported = 0
+    existing = 0
+    for dt_name, json_path in doctypes_to_check:
+        if frappe.db.exists("DocType", dt_name):
+            existing += 1
+            continue
+
+        if not os.path.exists(json_path):
+            print(f"      WARN: JSON not found for {dt_name} at {json_path}")
+            continue
+
+        try:
+            import_file_by_path(json_path, force=True, ignore_version=True)
+            imported += 1
+            print(f"      + imported {dt_name}")
+        except Exception as e:
+            print(f"      ERR importing {dt_name}: {e}")
+
+    frappe.db.commit()
+    return {"imported": imported, "existing": existing}
 
 
 def _install_custom_fields():

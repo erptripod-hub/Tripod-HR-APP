@@ -1,7 +1,7 @@
 {
   "doctype": "Dashboard",
   "name": "HR Manpower & Budget",
-  "module": "Tripod Hr App",
+  "module": "Tripod HR",
   "is_default": 0,
   "is_standard": 1,
   "charts": [

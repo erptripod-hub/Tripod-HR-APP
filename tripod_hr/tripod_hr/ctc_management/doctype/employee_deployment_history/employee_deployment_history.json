@@ -1,7 +1,7 @@
 {
   "doctype": "DocType",
   "name": "Employee Deployment History",
-  "module": "Tripod Hr App",
+  "module": "Tripod HR",
   "engine": "InnoDB",
   "istable": 1,
   "fields": [

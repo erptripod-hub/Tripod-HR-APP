@@ -1,7 +1,7 @@
 {
   "doctype": "DocType",
   "name": "CTC Component Default",
-  "module": "Tripod Hr App",
+  "module": "Tripod HR",
   "engine": "InnoDB",
   "naming_rule": "By fieldname",
   "autoname": "field:branch",
