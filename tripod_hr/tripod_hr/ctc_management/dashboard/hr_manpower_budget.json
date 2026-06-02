@@ -1,0 +1,19 @@
+{
+  "doctype": "Dashboard",
+  "name": "HR Manpower & Budget",
+  "module": "Tripod Hr App",
+  "is_default": 0,
+  "is_standard": 1,
+  "charts": [
+    {"chart": "Headcount by Company"},
+    {"chart": "Headcount by Branch"},
+    {"chart": "Monthly CTC by Company"},
+    {"chart": "Office vs Labour Split"}
+  ],
+  "cards": [
+    {"card": "Total Active Headcount"},
+    {"card": "Total Monthly CTC"},
+    {"card": "Total Annual CTC"},
+    {"card": "Hires Last 30 Days"}
+  ]
+}

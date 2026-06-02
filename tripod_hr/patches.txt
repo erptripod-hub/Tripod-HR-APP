@@ -1,1 +1,3 @@
 tripod_hr.patches.restore_ess_workspace
+tripod_hr.patches.v1_0_seed_ctc_defaults
+tripod_hr.patches.v1_1_migrate_existing_employees

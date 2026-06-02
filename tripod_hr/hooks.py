@@ -104,34 +104,42 @@ override_doctype_class = {
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-#	"*": {
-#		"on_update": "method",
-#		"on_cancel": "method",
-#		"on_trash": "method"
-#	}
-# }
+doc_events = {
+	"Employee": {
+		"before_save": "tripod_hr.tripod_hr.ctc_management.hooks_handlers.employee_before_save",
+		"after_save":  "tripod_hr.tripod_hr.ctc_management.hooks_handlers.employee_after_save",
+	},
+	"Salary Structure Assignment": {
+		"before_save": "tripod_hr.tripod_hr.ctc_management.hooks_handlers.ssa_before_save",
+		"on_submit":   "tripod_hr.tripod_hr.ctc_management.hooks_handlers.ssa_after_submit",
+	},
+	"Salary Increment": {
+		"on_submit": "tripod_hr.tripod_hr.ctc_management.hooks_handlers.salary_increment_on_submit",
+	},
+}
 
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-#	"all": [
-#		"tripod_hr.tasks.all"
-#	],
-#	"daily": [
-#		"tripod_hr.tasks.daily"
-#	],
-#	"hourly": [
-#		"tripod_hr.tasks.hourly"
-#	],
-#	"weekly": [
-#		"tripod_hr.tasks.weekly"
-#	],
-#	"monthly": [
-#		"tripod_hr.tasks.monthly"
-#	],
-# }
+scheduler_events = {
+	"daily": [
+		"tripod_hr.tripod_hr.ctc_management.hooks_handlers.daily_ctc_recalculation",
+	],
+}
+
+# Fixtures
+# ---------------
+
+fixtures = [
+	{
+		"doctype": "Custom Field",
+		"filters": [
+			["dt", "in", ["Employee", "Salary Structure Assignment"]],
+			["fieldname", "like", "custom_%"]
+		]
+	},
+	"CTC Component Default",
+]
 
 # Testing
 # -------

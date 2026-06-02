@@ -1,0 +1,45 @@
+{
+  "doctype": "DocType",
+  "name": "Employee Deployment History",
+  "module": "Tripod Hr App",
+  "engine": "InnoDB",
+  "istable": 1,
+  "fields": [
+    {
+      "fieldname": "from_date",
+      "label": "From Date",
+      "fieldtype": "Date",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "to_date",
+      "label": "To Date",
+      "fieldtype": "Date",
+      "in_list_view": 1,
+      "description": "Leave blank if currently deployed"
+    },
+    {
+      "fieldname": "deployed_to_branch",
+      "label": "Deployed To Branch",
+      "fieldtype": "Link",
+      "options": "Branch",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "deployed_to_company",
+      "label": "Deployed To Company",
+      "fieldtype": "Link",
+      "options": "Company",
+      "reqd": 1,
+      "in_list_view": 1,
+      "fetch_from": "deployed_to_branch.company"
+    },
+    {
+      "fieldname": "reason",
+      "label": "Reason",
+      "fieldtype": "Small Text"
+    }
+  ]
+}
