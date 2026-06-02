@@ -68,6 +68,10 @@ doctype_js = {
 # before_install = "tripod_hr.install.before_install"
 # after_install = "tripod_hr.install.after_install"
 
+# After Migrate — auto-runs CTC installer
+# ----------------------------------------
+after_migrate = ["tripod_hr.tripod_hr.ctc_management.install_ctc.execute"]
+
 # Uninstallation
 # ------------
 
