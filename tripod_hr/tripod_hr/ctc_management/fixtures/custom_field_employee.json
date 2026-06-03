@@ -1,198 +1,22 @@
 [
-  {
-    "doctype": "Custom Field",
-    "dt": "Employee",
-    "fieldname": "custom_ctc_tab",
-    "label": "CTC",
-    "fieldtype": "Tab Break",
-    "insert_after": "attendance_and_leave_details",
-    "permlevel": 1
-  },
-  {
-    "doctype": "Custom Field",
-    "dt": "Employee",
-    "fieldname": "custom_ctc_components_section",
-    "label": "CTC Components (Monthly)",
-    "fieldtype": "Section Break",
-    "insert_after": "custom_ctc_tab",
-    "permlevel": 1
-  },
-  {
-    "doctype": "Custom Field",
-    "dt": "Employee",
-    "fieldname": "custom_accommodation",
-    "label": "Accommodation",
-    "fieldtype": "Currency",
-    "insert_after": "custom_ctc_components_section",
-    "permlevel": 1,
-    "description": "Default fetched from branch, can be overridden"
-  },
-  {
-    "doctype": "Custom Field",
-    "dt": "Employee",
-    "fieldname": "custom_visa",
-    "label": "Visa",
-    "fieldtype": "Currency",
-    "insert_after": "custom_accommodation",
-    "permlevel": 1,
-    "depends_on": "eval:doc.branch && (doc.branch.toLowerCase().includes('uae') || doc.branch.toLowerCase().includes('dubai') || doc.branch.toLowerCase().includes('luxxe'))",
-    "description": "UAE staff only"
-  },
-  {
-    "doctype": "Custom Field",
-    "dt": "Employee",
-    "fieldname": "custom_iqama",
-    "label": "Iqama",
-    "fieldtype": "Currency",
-    "insert_after": "custom_visa",
-    "permlevel": 1,
-    "depends_on": "eval:doc.branch && doc.branch.toLowerCase().includes('ksa')",
-    "description": "KSA staff only"
-  },
-  {
-    "doctype": "Custom Field",
-    "dt": "Employee",
-    "fieldname": "custom_medical_insurance",
-    "label": "Medical Insurance",
-    "fieldtype": "Currency",
-    "insert_after": "custom_iqama",
-    "permlevel": 1
-  },
-  {
-    "doctype": "Custom Field",
-    "dt": "Employee",
-    "fieldname": "custom_column_break_ctc_1",
-    "fieldtype": "Column Break",
-    "insert_after": "custom_medical_insurance",
-    "permlevel": 1
-  },
-  {
-    "doctype": "Custom Field",
-    "dt": "Employee",
-    "fieldname": "custom_ticket_allowance",
-    "label": "Ticket Allowance",
-    "fieldtype": "Currency",
-    "insert_after": "custom_column_break_ctc_1",
-    "permlevel": 1
-  },
-  {
-    "doctype": "Custom Field",
-    "dt": "Employee",
-    "fieldname": "custom_transport",
-    "label": "Transport",
-    "fieldtype": "Currency",
-    "insert_after": "custom_ticket_allowance",
-    "permlevel": 1
-  },
-  {
-    "doctype": "Custom Field",
-    "dt": "Employee",
-    "fieldname": "custom_ctc_totals_section",
-    "label": "Computed Totals",
-    "fieldtype": "Section Break",
-    "insert_after": "custom_transport",
-    "permlevel": 1
-  },
-  {
-    "doctype": "Custom Field",
-    "dt": "Employee",
-    "fieldname": "custom_total_salary",
-    "label": "Total Salary (Monthly)",
-    "fieldtype": "Currency",
-    "insert_after": "custom_ctc_totals_section",
-    "permlevel": 1,
-    "read_only": 1,
-    "description": "Synced from active Salary Structure Assignment"
-  },
-  {
-    "doctype": "Custom Field",
-    "dt": "Employee",
-    "fieldname": "custom_gratuity_monthly",
-    "label": "Gratuity / Month",
-    "fieldtype": "Currency",
-    "insert_after": "custom_total_salary",
-    "permlevel": 1,
-    "read_only": 1,
-    "description": "Auto-calculated per company law and tenure"
-  },
-  {
-    "doctype": "Custom Field",
-    "dt": "Employee",
-    "fieldname": "custom_column_break_ctc_2",
-    "fieldtype": "Column Break",
-    "insert_after": "custom_gratuity_monthly",
-    "permlevel": 1
-  },
-  {
-    "doctype": "Custom Field",
-    "dt": "Employee",
-    "fieldname": "custom_monthly_ctc",
-    "label": "Monthly CTC",
-    "fieldtype": "Currency",
-    "insert_after": "custom_column_break_ctc_2",
-    "permlevel": 1,
-    "read_only": 1,
-    "bold": 1
-  },
-  {
-    "doctype": "Custom Field",
-    "dt": "Employee",
-    "fieldname": "custom_annual_ctc",
-    "label": "Annual CTC",
-    "fieldtype": "Currency",
-    "insert_after": "custom_monthly_ctc",
-    "permlevel": 1,
-    "read_only": 1
-  },
-  {
-    "doctype": "Custom Field",
-    "dt": "Employee",
-    "fieldname": "custom_deployment_section",
-    "label": "Deployment History",
-    "fieldtype": "Section Break",
-    "insert_after": "custom_annual_ctc",
-    "permlevel": 1,
-    "collapsible": 1
-  },
-  {
-    "doctype": "Custom Field",
-    "dt": "Employee",
-    "fieldname": "custom_deployment_history",
-    "label": "Deployment History",
-    "fieldtype": "Table",
-    "options": "Employee Deployment History",
-    "insert_after": "custom_deployment_section",
-    "permlevel": 1
-  },
-  {
-    "doctype": "Custom Field",
-    "dt": "Employee",
-    "fieldname": "custom_ctc_audit_section",
-    "label": "Audit",
-    "fieldtype": "Section Break",
-    "insert_after": "custom_deployment_history",
-    "permlevel": 1,
-    "collapsible": 1
-  },
-  {
-    "doctype": "Custom Field",
-    "dt": "Employee",
-    "fieldname": "custom_ctc_last_updated_by",
-    "label": "Last Updated By",
-    "fieldtype": "Link",
-    "options": "User",
-    "insert_after": "custom_ctc_audit_section",
-    "permlevel": 1,
-    "read_only": 1
-  },
-  {
-    "doctype": "Custom Field",
-    "dt": "Employee",
-    "fieldname": "custom_ctc_last_updated_on",
-    "label": "Last Updated On",
-    "fieldtype": "Datetime",
-    "insert_after": "custom_ctc_last_updated_by",
-    "permlevel": 1,
-    "read_only": 1
-  }
+  {"doctype":"Custom Field","dt":"Employee","fieldname":"custom_ctc_tab","label":"CTC","fieldtype":"Tab Break","insert_after":"attendance_and_leave_details","permlevel":0,"depends_on":"eval:in_list(frappe.user_roles, \"HR Manager\")"},
+  {"doctype":"Custom Field","dt":"Employee","fieldname":"custom_ctc_components_section","label":"CTC Components (Monthly)","fieldtype":"Section Break","insert_after":"custom_ctc_tab","permlevel":0},
+  {"doctype":"Custom Field","dt":"Employee","fieldname":"custom_accommodation","label":"Accommodation","fieldtype":"Currency","insert_after":"custom_ctc_components_section","permlevel":1,"description":"Default fetched from branch, can be overridden"},
+  {"doctype":"Custom Field","dt":"Employee","fieldname":"custom_visa","label":"Visa","fieldtype":"Currency","insert_after":"custom_accommodation","permlevel":1,"description":"UAE staff only"},
+  {"doctype":"Custom Field","dt":"Employee","fieldname":"custom_iqama","label":"Iqama","fieldtype":"Currency","insert_after":"custom_visa","permlevel":1,"description":"KSA staff only"},
+  {"doctype":"Custom Field","dt":"Employee","fieldname":"custom_medical_insurance","label":"Medical Insurance","fieldtype":"Currency","insert_after":"custom_iqama","permlevel":1},
+  {"doctype":"Custom Field","dt":"Employee","fieldname":"custom_column_break_ctc_1","fieldtype":"Column Break","insert_after":"custom_medical_insurance","permlevel":0},
+  {"doctype":"Custom Field","dt":"Employee","fieldname":"custom_ticket_allowance","label":"Ticket Allowance","fieldtype":"Currency","insert_after":"custom_column_break_ctc_1","permlevel":1},
+  {"doctype":"Custom Field","dt":"Employee","fieldname":"custom_transport","label":"Transport","fieldtype":"Currency","insert_after":"custom_ticket_allowance","permlevel":1},
+  {"doctype":"Custom Field","dt":"Employee","fieldname":"custom_ctc_totals_section","label":"Computed Totals","fieldtype":"Section Break","insert_after":"custom_transport","permlevel":0},
+  {"doctype":"Custom Field","dt":"Employee","fieldname":"custom_total_salary","label":"Total Salary (Monthly)","fieldtype":"Currency","insert_after":"custom_ctc_totals_section","permlevel":1,"read_only":1,"description":"Synced from active Salary Structure Assignment"},
+  {"doctype":"Custom Field","dt":"Employee","fieldname":"custom_gratuity_monthly","label":"Gratuity / Month","fieldtype":"Currency","insert_after":"custom_total_salary","permlevel":1,"read_only":1,"description":"Auto-calculated per company law and tenure"},
+  {"doctype":"Custom Field","dt":"Employee","fieldname":"custom_column_break_ctc_2","fieldtype":"Column Break","insert_after":"custom_gratuity_monthly","permlevel":0},
+  {"doctype":"Custom Field","dt":"Employee","fieldname":"custom_monthly_ctc","label":"Monthly CTC","fieldtype":"Currency","insert_after":"custom_column_break_ctc_2","permlevel":1,"read_only":1,"bold":1},
+  {"doctype":"Custom Field","dt":"Employee","fieldname":"custom_annual_ctc","label":"Annual CTC","fieldtype":"Currency","insert_after":"custom_monthly_ctc","permlevel":1,"read_only":1},
+  {"doctype":"Custom Field","dt":"Employee","fieldname":"custom_deployment_section","label":"Deployment History","fieldtype":"Section Break","insert_after":"custom_annual_ctc","permlevel":0,"collapsible":1},
+  {"doctype":"Custom Field","dt":"Employee","fieldname":"custom_deployment_history","label":"Deployment History","fieldtype":"Table","options":"Employee Deployment History","insert_after":"custom_deployment_section","permlevel":1},
+  {"doctype":"Custom Field","dt":"Employee","fieldname":"custom_ctc_audit_section","label":"Audit","fieldtype":"Section Break","insert_after":"custom_deployment_history","permlevel":0,"collapsible":1},
+  {"doctype":"Custom Field","dt":"Employee","fieldname":"custom_ctc_last_updated_by","label":"Last Updated By","fieldtype":"Link","options":"User","insert_after":"custom_ctc_audit_section","permlevel":1,"read_only":1},
+  {"doctype":"Custom Field","dt":"Employee","fieldname":"custom_ctc_last_updated_on","label":"Last Updated On","fieldtype":"Datetime","insert_after":"custom_ctc_last_updated_by","permlevel":1,"read_only":1}
 ]
