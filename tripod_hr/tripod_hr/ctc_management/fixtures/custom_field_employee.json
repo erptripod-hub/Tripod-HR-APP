@@ -1,0 +1,17 @@
+[
+  {"dt":"Employee","fieldname":"custom_ctc_tab","label":"CTC","fieldtype":"Tab Break","insert_after":"PLACEHOLDER","permlevel":0,"depends_on":"eval:in_list(frappe.user_roles, \"HR Manager\")"},
+  {"dt":"Employee","fieldname":"custom_ctc_components_section","label":"CTC Components (Monthly)","fieldtype":"Section Break","insert_after":"custom_ctc_tab","permlevel":0},
+  {"dt":"Employee","fieldname":"custom_accommodation","label":"Accommodation","fieldtype":"Currency","insert_after":"custom_ctc_components_section","permlevel":1},
+  {"dt":"Employee","fieldname":"custom_visa","label":"Visa","fieldtype":"Currency","insert_after":"custom_accommodation","permlevel":1,"description":"UAE staff only"},
+  {"dt":"Employee","fieldname":"custom_iqama","label":"Iqama","fieldtype":"Currency","insert_after":"custom_visa","permlevel":1,"description":"KSA staff only"},
+  {"dt":"Employee","fieldname":"custom_medical_insurance","label":"Medical Insurance","fieldtype":"Currency","insert_after":"custom_iqama","permlevel":1},
+  {"dt":"Employee","fieldname":"custom_column_break_ctc_1","fieldtype":"Column Break","insert_after":"custom_medical_insurance","permlevel":0},
+  {"dt":"Employee","fieldname":"custom_ticket_allowance","label":"Ticket Allowance","fieldtype":"Currency","insert_after":"custom_column_break_ctc_1","permlevel":1},
+  {"dt":"Employee","fieldname":"custom_transport","label":"Transport","fieldtype":"Currency","insert_after":"custom_ticket_allowance","permlevel":1},
+  {"dt":"Employee","fieldname":"custom_ctc_totals_section","label":"Computed Totals","fieldtype":"Section Break","insert_after":"custom_transport","permlevel":0},
+  {"dt":"Employee","fieldname":"custom_total_salary","label":"Total Salary (Monthly)","fieldtype":"Currency","insert_after":"custom_ctc_totals_section","permlevel":1,"read_only":1,"description":"From active Salary Structure Assignment"},
+  {"dt":"Employee","fieldname":"custom_gratuity_monthly","label":"Gratuity / Month","fieldtype":"Currency","insert_after":"custom_total_salary","permlevel":1,"read_only":1},
+  {"dt":"Employee","fieldname":"custom_column_break_ctc_2","fieldtype":"Column Break","insert_after":"custom_gratuity_monthly","permlevel":0},
+  {"dt":"Employee","fieldname":"custom_monthly_ctc","label":"Monthly CTC","fieldtype":"Currency","insert_after":"custom_column_break_ctc_2","permlevel":1,"read_only":1,"bold":1},
+  {"dt":"Employee","fieldname":"custom_annual_ctc","label":"Annual CTC","fieldtype":"Currency","insert_after":"custom_monthly_ctc","permlevel":1,"read_only":1}
+]
