@@ -70,7 +70,10 @@ doctype_js = {
 
 # After Migrate — install CTC custom fields on Employee + SSA
 # -----------------------------------------------------------
-after_migrate = ["tripod_hr.tripod_hr.ctc_management.install_ctc_fields.install"]
+after_migrate = [
+    "tripod_hr.tripod_hr.ctc_management.install_ctc_fields.install",
+    "tripod_hr.tripod_hr.payroll_filter.install_employment_type_field.install",
+]
 
 # Uninstallation
 # ------------
@@ -101,7 +104,8 @@ after_migrate = ["tripod_hr.tripod_hr.ctc_management.install_ctc_fields.install"
 # Override standard doctype classes
 
 override_doctype_class = {
-	"Salary Slip": "tripod_hr.overrides.salary_slip.CustomSalarySlip"
+	"Salary Slip": "tripod_hr.overrides.salary_slip.CustomSalarySlip",
+	"Payroll Entry": "tripod_hr.overrides.payroll_entry.CustomPayrollEntry",
 }
 
 # Document Events
