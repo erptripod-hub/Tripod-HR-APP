@@ -90,9 +90,13 @@ class UAEEOSCalculation(Document):
 			self.total_service_days = days
 			# Use 365.25 to match the sample's calculation precision
 			self.employment_years = flt(days / 365.25, 4)
+			# Days eligible = total days minus unpaid leaves (for gratuity)
+			unpaid = cint(self.unpaid_leaves_taken) if self.unpaid_leaves_taken else 0
+			self.days_eligible_for_gratuity = days - unpaid
 		else:
 			self.total_service_days = 0
 			self.employment_years = 0
+			self.days_eligible_for_gratuity = 0
 
 	# ------------------------------------------------------------------
 	# Gratuity (UAE Federal Decree-Law 33/2021)

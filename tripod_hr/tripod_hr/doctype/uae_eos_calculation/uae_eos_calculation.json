@@ -37,6 +37,7 @@
   "gratuity_base_amount",
   "employment_years",
   "total_service_days",
+  "days_eligible_for_gratuity",
   "column_break_grat_1",
   "daily_basic_wage",
   "gratuity_days_per_year",
@@ -307,6 +308,13 @@
    "read_only": 1
   },
   {
+   "fieldname": "days_eligible_for_gratuity",
+   "fieldtype": "Int",
+   "label": "Number of Days Eligible",
+   "read_only": 1,
+   "description": "Days eligible for gratuity calculation (service days - unpaid leaves)"
+  },
+  {
    "fieldname": "column_break_grat_1",
    "fieldtype": "Column Break"
   },
@@ -453,7 +461,7 @@
   {
    "fieldname": "days_worked_pending",
    "fieldtype": "Int",
-   "label": "Days Worked For Which Salary Is Pending"
+   "label": "Days Worked in Current Month"
   },
   {
    "fieldname": "unpaid_leaves_taken",
