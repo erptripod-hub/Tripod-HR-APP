@@ -90,9 +90,13 @@ class UAEEOSCalculation(Document):
 			self.total_service_days = days
 			# Use 365.25 to match the sample's calculation precision
 			self.employment_years = flt(days / 365.25, 4)
+			# Days eligible = total days minus unpaid leaves (for gratuity)
+			unpaid = cint(self.unpaid_leaves_taken) if self.unpaid_leaves_taken else 0
+			self.days_eligible_for_gratuity = days - unpaid
 		else:
 			self.total_service_days = 0
 			self.employment_years = 0
+			self.days_eligible_for_gratuity = 0
 
 	# ------------------------------------------------------------------
 	# Gratuity (UAE Federal Decree-Law 33/2021)
@@ -201,26 +205,24 @@ class UAEEOSCalculation(Document):
 	# Pending Salary
 	# ------------------------------------------------------------------
 	def calculate_pending_salary(self):
-		# Calculate pending salary from days worked
+		# Calculate current month payment from days worked
 		gross = flt(self.gross_pay_per_month)
 		days = cint(self.days_worked_pending)
-		unpaid_leaves = flt(self.unpaid_leaves_taken)
 
-		net_days = days - unpaid_leaves
-		if net_days < 0:
-			net_days = 0
-
-		if gross:
-			self.pending_salary_last_month = flt((gross / 30) * net_days, 2)
+		# Current Month Payment = (Gross / 30) * Days Worked
+		if gross and days:
+			self.current_month_payment = flt((gross / 30) * days, 2)
 		else:
-			self.pending_salary_last_month = 0
+			self.current_month_payment = 0
 
-		# Total Salary Payable section = pending salary + air ticket
+		# pending_salary_last_month is MANUAL entry - don't auto-calculate
+
+		# Total Salary Payable section = current month + pending last month + air ticket
 		if self.override_salary_payable or self.calculation_mode == "Manual":
 			return
 
 		self.salary_payable = flt(
-			flt(self.pending_salary_last_month) + flt(self.air_ticket_allowance), 2
+			flt(self.current_month_payment) + flt(self.pending_salary_last_month) + flt(self.air_ticket_allowance), 2
 		)
 
 	# ------------------------------------------------------------------
@@ -356,12 +358,14 @@ def get_employee_details(employee):
 			ssa = frappe.db.get_value(
 				"Salary Structure Assignment",
 				{"employee": employee, "docstatus": 1},
-				["name", "base", "salary_structure"],
+				["name", "base", "salary_structure", "sc_basic"],
 				order_by="from_date desc",
 			)
 			if ssa:
-				ssa_name, base, structure = ssa
-				data["base_salary"] = flt(base)
+				ssa_name, base, structure, sc_basic = ssa
+				# Use sc_basic if available, otherwise fall back to base
+				base_salary = flt(sc_basic) if sc_basic else flt(base)
+				data["base_salary"] = base_salary
 
 				earnings = frappe.get_all(
 					"Salary Detail",
@@ -381,10 +385,10 @@ def get_employee_details(employee):
 					else:
 						other += amt
 
-				# If structure components are formula-based (amount=0), use base as Basic
-				if base and not (basic or housing or transport or other):
-					basic = flt(base)
-					salary_source = "Structure Base (formula-based components)"
+				# If structure components are formula-based (amount=0), use sc_basic/base as Basic
+				if base_salary and not (basic or housing or transport or other):
+					basic = base_salary
+					salary_source = "Salary Structure Assignment (sc_basic)"
 				elif basic or housing or transport or other:
 					salary_source = "Salary Structure"
 		except Exception as e:

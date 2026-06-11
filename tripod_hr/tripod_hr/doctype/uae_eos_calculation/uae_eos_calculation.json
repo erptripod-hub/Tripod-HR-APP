@@ -24,6 +24,12 @@
   "column_break_dates",
   "exit_status",
   "reason_notes",
+  "section_service_summary",
+  "employment_years",
+  "total_service_days",
+  "column_break_service",
+  "unpaid_leaves_taken",
+  "days_eligible_for_gratuity",
   "section_salary",
   "basic_salary",
   "housing_allowance",
@@ -35,8 +41,6 @@
   "calculation_mode",
   "gratuity_base_type",
   "gratuity_base_amount",
-  "employment_years",
-  "total_service_days",
   "column_break_grat_1",
   "daily_basic_wage",
   "gratuity_days_per_year",
@@ -63,7 +67,7 @@
   "overtime_payable",
   "section_pending_salary",
   "days_worked_pending",
-  "unpaid_leaves_taken",
+  "current_month_payment",
   "pending_salary_last_month",
   "column_break_pend",
   "air_ticket_allowance",
@@ -170,12 +174,14 @@
    "in_standard_filter": 1
   },
   {
+   "fetch_from": "employee.country",
    "fieldname": "nationality",
    "fieldtype": "Data",
    "label": "Nationality",
    "read_only": 1
   },
   {
+   "fetch_from": "employee.identification_no",
    "fieldname": "emirates_id",
    "fieldtype": "Data",
    "label": "Emirates ID",
@@ -224,6 +230,15 @@
    "fieldname": "reason_notes",
    "fieldtype": "Small Text",
    "label": "Reason Notes"
+  },
+  {
+   "fieldname": "section_service_summary",
+   "fieldtype": "Section Break",
+   "label": "Service Summary"
+  },
+  {
+   "fieldname": "column_break_service",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "section_salary",
@@ -305,6 +320,13 @@
    "fieldtype": "Int",
    "label": "Total Service Days",
    "read_only": 1
+  },
+  {
+   "fieldname": "days_eligible_for_gratuity",
+   "fieldtype": "Int",
+   "label": "Number of Days Eligible",
+   "read_only": 1,
+   "description": "Days eligible for gratuity calculation (service days - unpaid leaves)"
   },
   {
    "fieldname": "column_break_grat_1",
@@ -453,12 +475,20 @@
   {
    "fieldname": "days_worked_pending",
    "fieldtype": "Int",
-   "label": "Days Worked For Which Salary Is Pending"
+   "label": "Days Worked in Current Month"
+  },
+  {
+   "fieldname": "current_month_payment",
+   "fieldtype": "Currency",
+   "label": "Current Month Payment",
+   "read_only": 1,
+   "options": "Company:company:default_currency",
+   "description": "Auto-calculated: (Gross Pay / 30) × Days Worked"
   },
   {
    "fieldname": "unpaid_leaves_taken",
    "fieldtype": "Float",
-   "label": "Unpaid Leaves Taken During This Period"
+   "label": "Number of Unpaid Leaves"
   },
   {
    "fieldname": "pending_salary_last_month",
