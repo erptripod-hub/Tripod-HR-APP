@@ -67,6 +67,7 @@
   "overtime_payable",
   "section_pending_salary",
   "days_worked_pending",
+  "current_month_payment",
   "pending_salary_last_month",
   "column_break_pend",
   "air_ticket_allowance",
@@ -473,6 +474,14 @@
    "fieldname": "days_worked_pending",
    "fieldtype": "Int",
    "label": "Days Worked in Current Month"
+  },
+  {
+   "fieldname": "current_month_payment",
+   "fieldtype": "Currency",
+   "label": "Current Month Payment",
+   "read_only": 1,
+   "options": "Company:company:default_currency",
+   "description": "Auto-calculated: (Gross Pay / 30) × Days Worked"
   },
   {
    "fieldname": "unpaid_leaves_taken",
