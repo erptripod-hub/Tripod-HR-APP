@@ -358,12 +358,14 @@ def get_employee_details(employee):
 			ssa = frappe.db.get_value(
 				"Salary Structure Assignment",
 				{"employee": employee, "docstatus": 1},
-				["name", "base", "salary_structure"],
+				["name", "base", "salary_structure", "sc_basic"],
 				order_by="from_date desc",
 			)
 			if ssa:
-				ssa_name, base, structure = ssa
-				data["base_salary"] = flt(base)
+				ssa_name, base, structure, sc_basic = ssa
+				# Use sc_basic if available, otherwise fall back to base
+				base_salary = flt(sc_basic) if sc_basic else flt(base)
+				data["base_salary"] = base_salary
 
 				earnings = frappe.get_all(
 					"Salary Detail",
@@ -383,10 +385,10 @@ def get_employee_details(employee):
 					else:
 						other += amt
 
-				# If structure components are formula-based (amount=0), use base as Basic
-				if base and not (basic or housing or transport or other):
-					basic = flt(base)
-					salary_source = "Structure Base (formula-based components)"
+				# If structure components are formula-based (amount=0), use sc_basic/base as Basic
+				if base_salary and not (basic or housing or transport or other):
+					basic = base_salary
+					salary_source = "Salary Structure Assignment (sc_basic)"
 				elif basic or housing or transport or other:
 					salary_source = "Salary Structure"
 		except Exception as e:
