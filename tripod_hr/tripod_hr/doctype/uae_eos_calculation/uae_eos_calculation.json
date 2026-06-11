@@ -24,6 +24,12 @@
   "column_break_dates",
   "exit_status",
   "reason_notes",
+  "section_service_summary",
+  "employment_years",
+  "total_service_days",
+  "column_break_service",
+  "unpaid_leaves_taken",
+  "days_eligible_for_gratuity",
   "section_salary",
   "basic_salary",
   "housing_allowance",
@@ -35,9 +41,6 @@
   "calculation_mode",
   "gratuity_base_type",
   "gratuity_base_amount",
-  "employment_years",
-  "total_service_days",
-  "days_eligible_for_gratuity",
   "column_break_grat_1",
   "daily_basic_wage",
   "gratuity_days_per_year",
@@ -64,7 +67,6 @@
   "overtime_payable",
   "section_pending_salary",
   "days_worked_pending",
-  "unpaid_leaves_taken",
   "pending_salary_last_month",
   "column_break_pend",
   "air_ticket_allowance",
@@ -225,6 +227,15 @@
    "fieldname": "reason_notes",
    "fieldtype": "Small Text",
    "label": "Reason Notes"
+  },
+  {
+   "fieldname": "section_service_summary",
+   "fieldtype": "Section Break",
+   "label": "Service Summary"
+  },
+  {
+   "fieldname": "column_break_service",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "section_salary",
@@ -466,7 +477,7 @@
   {
    "fieldname": "unpaid_leaves_taken",
    "fieldtype": "Float",
-   "label": "Unpaid Leaves Taken During This Period"
+   "label": "Number of Unpaid Leaves"
   },
   {
    "fieldname": "pending_salary_last_month",
