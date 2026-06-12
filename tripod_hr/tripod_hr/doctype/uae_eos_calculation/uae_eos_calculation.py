@@ -8,6 +8,7 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.utils import date_diff, flt, cint, getdate
+from calendar import monthrange
 
 
 class UAEEOSCalculation(Document):
@@ -205,20 +206,30 @@ class UAEEOSCalculation(Document):
 	# Pending Salary
 	# ------------------------------------------------------------------
 	def calculate_pending_salary(self):
-		# Calculate current month payment from days worked
+		# Manual mode: leave Current Month Payment & Salary Payable untouched
+		if self.calculation_mode == "Manual":
+			return
+
 		gross = flt(self.gross_pay_per_month)
 		days = cint(self.days_worked_pending)
 
-		# Current Month Payment = (Gross / 30) * Days Worked
+		# Daily rate uses the ACTUAL calendar days of the settlement month
+		# (28/29/30/31), not a flat 30.
+		days_in_month = 30
+		if self.date_of_settlement:
+			d = getdate(self.date_of_settlement)
+			days_in_month = monthrange(d.year, d.month)[1]
+
+		# Current Month Payment = (Gross / calendar days) * Days Worked
 		if gross and days:
-			self.current_month_payment = flt((gross / 30) * days, 2)
+			self.current_month_payment = flt((gross / days_in_month) * days, 2)
 		else:
 			self.current_month_payment = 0
 
 		# pending_salary_last_month is MANUAL entry - don't auto-calculate
 
-		# Total Salary Payable section = current month + pending last month + air ticket
-		if self.override_salary_payable or self.calculation_mode == "Manual":
+		# Total Salary Payable = current month + pending last month + air ticket
+		if self.override_salary_payable:
 			return
 
 		self.salary_payable = flt(
@@ -315,62 +326,76 @@ def get_employee_details(employee):
 		"iban": getattr(emp, "iban", None),
 	}
 
-	# Strategy: Get salary from latest submitted Salary Slip (always has actual amounts).
-	# Fallback: Salary Structure Assignment (may have 0 amounts if formula-based).
+	# ------------------------------------------------------------------
+	# Salary fetch — SSA is the authoritative contractual source for EOS.
+	# sc_* components feed Basic / Housing / Transport; the residual up to
+	# the SSA Total Salary goes to Other, so Gross Pay == SSA Total Salary.
+	# Falls back to the latest Salary Slip, then manual entry.
+	# ------------------------------------------------------------------
 	basic = housing = transport = other = 0
 	salary_source = None
 
-	# --- Strategy 1: Latest submitted Salary Slip ---
+	# --- Strategy 1: Salary Structure Assignment (contractual) ---
 	try:
-		latest_slip = frappe.db.get_value(
-			"Salary Slip",
+		ssa_name = frappe.db.get_value(
+			"Salary Structure Assignment",
 			{"employee": employee, "docstatus": 1},
-			["name", "gross_pay", "base_gross_pay"],
-			order_by="end_date desc",
+			"name",
+			order_by="from_date desc",
 		)
-		if latest_slip:
-			slip_name = latest_slip[0]
-			earnings = frappe.get_all(
-				"Salary Detail",
-				filters={"parent": slip_name, "parentfield": "earnings"},
-				fields=["salary_component", "amount"],
-			)
-			for row in earnings:
-				comp = (row.salary_component or "").strip()
-				comp_lower = comp.lower()
-				amt = flt(row.amount)
-				if comp_lower == "basic" or comp_lower.startswith("basic"):
+		if ssa_name:
+			ssa = frappe.get_doc("Salary Structure Assignment", ssa_name)
+			sc_sum = 0
+			for field, val in ssa.as_dict().items():
+				if not field.startswith("sc_") or not val:
+					continue
+				amt = flt(val)
+				if not amt:
+					continue
+				sc_sum += amt
+				fl = field.lower()
+				if "basic" in fl:
 					basic += amt
-				elif comp == "HRA" or "hra" in comp_lower or "housing" in comp_lower or "house" in comp_lower or "accommodation" in comp_lower:
+				elif "hous" in fl or "hra" in fl or "accomm" in fl:
 					housing += amt
-				elif "transport" in comp_lower or "conveyance" in comp_lower:
+				elif "transport" in fl or "convey" in fl:
 					transport += amt
 				else:
 					other += amt
-			if basic or housing or transport or other:
-				salary_source = "Salary Slip"
-	except Exception as e:
-		frappe.log_error(f"EOS salary slip fetch error: {e}", "UAE EOS Calculation")
 
-	# --- Strategy 2: Fallback to Salary Structure Assignment ---
+			# Total Salary on the SSA (custom field) drives Gross Pay
+			ssa_total = (
+				flt(getattr(ssa, "custom_total_salary", 0))
+				or flt(getattr(ssa, "total_salary", 0))
+				or sc_sum
+			)
+
+			# Reconcile Other so Basic+Housing+Transport+Other == SSA Total
+			if ssa_total:
+				residual = flt(ssa_total) - (basic + housing + transport)
+				if residual >= 0:
+					other = residual
+
+			data["base_salary"] = flt(getattr(ssa, "base", 0))
+			if basic or housing or transport or other:
+				salary_source = "Salary Structure Assignment (Total Salary)"
+	except Exception as ex:
+		frappe.log_error(f"EOS SSA fetch error: {ex}", "UAE EOS Calculation")
+
+	# --- Strategy 2: Fallback to latest submitted Salary Slip ---
 	if not (basic or housing or transport or other):
 		try:
-			ssa = frappe.db.get_value(
-				"Salary Structure Assignment",
+			slip_name = frappe.db.get_value(
+				"Salary Slip",
 				{"employee": employee, "docstatus": 1},
-				["name", "base", "salary_structure", "sc_basic"],
-				order_by="from_date desc",
+				"name",
+				order_by="end_date desc",
 			)
-			if ssa:
-				ssa_name, base, structure, sc_basic = ssa
-				# Use sc_basic if available, otherwise fall back to base
-				base_salary = flt(sc_basic) if sc_basic else flt(base)
-				data["base_salary"] = base_salary
-
+			if slip_name:
 				earnings = frappe.get_all(
 					"Salary Detail",
-					filters={"parent": structure, "parentfield": "earnings"},
-					fields=["salary_component", "amount", "amount_based_on_formula", "formula"],
+					filters={"parent": slip_name, "parentfield": "earnings"},
+					fields=["salary_component", "amount"],
 				)
 				for row in earnings:
 					comp = (row.salary_component or "").strip()
@@ -384,15 +409,10 @@ def get_employee_details(employee):
 						transport += amt
 					else:
 						other += amt
-
-				# If structure components are formula-based (amount=0), use sc_basic/base as Basic
-				if base_salary and not (basic or housing or transport or other):
-					basic = base_salary
-					salary_source = "Salary Structure Assignment (sc_basic)"
-				elif basic or housing or transport or other:
-					salary_source = "Salary Structure"
-		except Exception as e:
-			frappe.log_error(f"EOS SSA fetch error: {e}", "UAE EOS Calculation")
+				if basic or housing or transport or other:
+					salary_source = "Salary Slip"
+		except Exception as ex:
+			frappe.log_error(f"EOS salary slip fetch error: {ex}", "UAE EOS Calculation")
 
 	data["basic_salary"] = basic
 	data["housing_allowance"] = housing
