@@ -264,16 +264,26 @@ frappe.ui.form.on('UAE EOS Calculation', {
     },
 
     calc_pending_salary: function(frm) {
+        if (frm.doc.calculation_mode === 'Manual') return;
+
         const gross = flt(frm.doc.gross_pay_per_month);
         const days = flt(frm.doc.days_worked_pending);
-        const unpaid = flt(frm.doc.unpaid_leaves_taken);
-        let net_days = days - unpaid;
-        if (net_days < 0) net_days = 0;
-        const pending = gross ? (gross / 30) * net_days : 0;
-        frm.set_value('pending_salary_last_month', flt(pending, 2));
 
-        if (frm.doc.override_salary_payable || frm.doc.calculation_mode === 'Manual') return;
-        const total = pending + flt(frm.doc.air_ticket_allowance);
+        // Daily rate uses the ACTUAL calendar days of the settlement month (28/29/30/31)
+        let days_in_month = 30;
+        if (frm.doc.date_of_settlement) {
+            const d = frappe.datetime.str_to_obj(frm.doc.date_of_settlement);
+            days_in_month = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+        }
+
+        // Current Month Payment = (Gross / calendar days) * Days Worked
+        const current = (gross && days) ? (gross / days_in_month) * days : 0;
+        frm.set_value('current_month_payment', flt(current, 2));
+
+        // pending_salary_last_month is MANUAL entry - don't auto-calculate
+
+        if (frm.doc.override_salary_payable) return;
+        const total = flt(current, 2) + flt(frm.doc.pending_salary_last_month) + flt(frm.doc.air_ticket_allowance);
         frm.set_value('salary_payable', flt(total, 2));
     },
 
