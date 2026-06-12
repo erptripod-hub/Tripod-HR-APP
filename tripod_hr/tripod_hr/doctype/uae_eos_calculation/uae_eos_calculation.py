@@ -75,12 +75,18 @@ class UAEEOSCalculation(Document):
 	# Gross pay
 	# ------------------------------------------------------------------
 	def calculate_gross_pay(self):
-		self.gross_pay_per_month = (
-			flt(self.basic_salary)
-			+ flt(self.housing_allowance)
-			+ flt(self.transportation_allowance)
-			+ flt(self.other_allowance)
-		)
+		# Gross Pay = SSA Total Salary (custom_total_salary), fetched on employee select.
+		# Only auto-sum the components when Gross is blank (manual-entry employees
+		# with no SSA total) or when not in Manual mode.
+		if self.calculation_mode == "Manual":
+			return
+		if not flt(self.gross_pay_per_month):
+			self.gross_pay_per_month = (
+				flt(self.basic_salary)
+				+ flt(self.housing_allowance)
+				+ flt(self.transportation_allowance)
+				+ flt(self.other_allowance)
+			)
 
 	# ------------------------------------------------------------------
 	# Service period (years and days)
@@ -418,6 +424,8 @@ def get_employee_details(employee):
 	data["housing_allowance"] = housing
 	data["transportation_allowance"] = transport
 	data["other_allowance"] = other
+	# Gross Pay = SSA custom_total_salary (Other was reconciled so the sum equals it)
+	data["gross_pay_per_month"] = flt(basic) + flt(housing) + flt(transport) + flt(other)
 	data["_salary_source"] = salary_source or "Not found - please enter manually"
 
 	# Get leave balance for paid leave types

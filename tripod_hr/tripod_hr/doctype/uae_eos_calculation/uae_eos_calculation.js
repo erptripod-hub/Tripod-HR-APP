@@ -83,6 +83,9 @@ frappe.ui.form.on('UAE EOS Calculation', {
                 frm.set_value('housing_allowance', d.housing_allowance || 0);
                 frm.set_value('transportation_allowance', d.transportation_allowance || 0);
                 frm.set_value('other_allowance', d.other_allowance || 0);
+                if (d.gross_pay_per_month) {
+                    frm.set_value('gross_pay_per_month', d.gross_pay_per_month);
+                }
 
                 // Leave & Loan
                 if (d.leaves_balance !== undefined) {
@@ -169,9 +172,13 @@ frappe.ui.form.on('UAE EOS Calculation', {
     },
 
     calc_gross_pay: function(frm) {
-        const gross = (flt(frm.doc.basic_salary) + flt(frm.doc.housing_allowance)
-            + flt(frm.doc.transportation_allowance) + flt(frm.doc.other_allowance));
-        frm.set_value('gross_pay_per_month', gross);
+        // Gross Pay = SSA Total Salary (fetched). Only auto-sum components when blank.
+        if (frm.doc.calculation_mode === 'Manual') return;
+        if (!flt(frm.doc.gross_pay_per_month)) {
+            const gross = (flt(frm.doc.basic_salary) + flt(frm.doc.housing_allowance)
+                + flt(frm.doc.transportation_allowance) + flt(frm.doc.other_allowance));
+            frm.set_value('gross_pay_per_month', gross);
+        }
     },
 
     calc_service_period: function(frm) {
