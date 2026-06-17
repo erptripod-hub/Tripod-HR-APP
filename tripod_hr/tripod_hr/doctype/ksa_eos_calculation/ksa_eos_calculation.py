@@ -5,7 +5,7 @@
 # As per Saudi Labor Law (Royal Decree No. M/51)
 #
 # Key differences from UAE:
-# - Gratuity based on FULL salary (not basic only)
+# - Gratuity based on FULL salary (not basic)
 # - First 5 years: 15 days per year (half month)
 # - After 5 years: 30 days per year (full month)
 # - Resignation percentages differ by service length
@@ -65,13 +65,17 @@ class KSAEOSCalculation(Document):
     # Service period (years and days)
     # ------------------------------------------------------------------
     def calculate_service_period(self):
+        # Skip if Manual mode
+        if self.calculation_mode == "Manual":
+            return
+            
         if self.date_of_joining and self.date_of_settlement:
             days = date_diff(self.date_of_settlement, self.date_of_joining)
             self.total_service_days = days
             self.employment_years = flt(days / 365.25, 4)
             # Days eligible = total days minus unpaid leaves
-            unpaid = cint(self.unpaid_leaves_taken) if self.unpaid_leaves_taken else 0
-            self.days_eligible_for_gratuity = days - unpaid
+            unpaid = flt(self.unpaid_leaves_taken) if self.unpaid_leaves_taken else 0
+            self.days_eligible_for_gratuity = cint(days - unpaid)
         else:
             self.total_service_days = 0
             self.employment_years = 0
@@ -81,6 +85,10 @@ class KSAEOSCalculation(Document):
     # Daily wage calculation
     # ------------------------------------------------------------------
     def calculate_daily_wage(self):
+        # Skip if Manual mode
+        if self.calculation_mode == "Manual":
+            return
+            
         if self.gross_salary:
             self.daily_wage = flt(self.gross_salary / 30, 2)
         else:
@@ -105,7 +113,12 @@ class KSAEOSCalculation(Document):
         Termination/End of Contract: 100%
         Article 80 (Gross Misconduct): 0%
         """
-        if self.override_gratuity or self.calculation_mode == "Manual":
+        # Skip if override is checked
+        if self.override_gratuity:
+            return
+            
+        # Skip if Manual mode
+        if self.calculation_mode == "Manual":
             return
 
         days = cint(self.days_eligible_for_gratuity)
@@ -115,7 +128,6 @@ class KSAEOSCalculation(Document):
         # Calculate gratuity days
         if days < 365:
             # Less than 1 year - still calculate pro-rata for KSA
-            # (Unlike UAE which requires minimum 1 year)
             days_first_five = (days / 365.25) * 15
             days_after_five = 0
         elif years <= 5:
@@ -177,6 +189,14 @@ class KSAEOSCalculation(Document):
     # Leave Salary
     # ------------------------------------------------------------------
     def calculate_leave_salary(self):
+        # Skip if override is checked
+        if self.override_leave:
+            return
+            
+        # Skip if Manual mode
+        if self.calculation_mode == "Manual":
+            return
+
         if self.leave_calculation_basis == "Basic Salary Only":
             # Would need basic salary field, but KSA typically uses full salary
             daily = flt(self.daily_wage)
@@ -186,20 +206,29 @@ class KSAEOSCalculation(Document):
         self.leave_daily_rate = flt(daily, 2)
 
         # Auto calculate balance
-        if self.leaves_accrued and self.leaves_utilized and not self.leaves_balance:
+        if self.leaves_accrued and self.leaves_utilized:
             self.leaves_balance = flt(self.leaves_accrued) - flt(self.leaves_utilized)
 
-        if self.override_leave or self.calculation_mode == "Manual":
-            return
-
         balance = flt(self.leaves_balance)
-        self.leave_salary_payable = flt(daily * balance, 2)
+        gross_leave = daily * balance
+        
+        # Subtract already paid amount
+        net_leave = gross_leave - flt(self.leave_salary_paid)
+        if net_leave < 0:
+            net_leave = 0
+
+        self.leave_salary_payable = flt(net_leave, 2)
 
     # ------------------------------------------------------------------
     # Overtime
     # ------------------------------------------------------------------
     def calculate_overtime(self):
-        if self.override_overtime or self.calculation_mode == "Manual":
+        # Skip if override is checked
+        if self.override_overtime:
+            return
+            
+        # Skip if Manual mode
+        if self.calculation_mode == "Manual":
             return
 
         hours = flt(self.pending_overtime_hours)
@@ -210,24 +239,28 @@ class KSAEOSCalculation(Document):
     # Pending Salary
     # ------------------------------------------------------------------
     def calculate_pending_salary(self):
-        if self.calculation_mode == "Manual":
-            return
+        # Skip if Manual mode for current month payment
+        if self.calculation_mode != "Manual":
+            gross = flt(self.gross_salary)
+            days = cint(self.days_worked_pending)
 
-        gross = flt(self.gross_salary)
-        days = cint(self.days_worked_pending)
+            # Calculate current month payment
+            days_in_month = 30
+            if self.date_of_settlement:
+                settlement_date = getdate(self.date_of_settlement)
+                days_in_month = monthrange(settlement_date.year, settlement_date.month)[1]
 
-        # Calculate current month payment
-        days_in_month = 30
-        if self.date_of_settlement:
-            settlement_date = getdate(self.date_of_settlement)
-            days_in_month = monthrange(settlement_date.year, settlement_date.month)[1]
+            if gross and days:
+                self.current_month_payment = flt((gross / days_in_month) * days, 2)
+            else:
+                self.current_month_payment = 0
 
-        if gross and days:
-            self.current_month_payment = flt((gross / days_in_month) * days, 2)
-        else:
-            self.current_month_payment = 0
-
+        # Skip salary_payable if override is checked
         if self.override_salary_payable:
+            return
+            
+        # Skip if Manual mode
+        if self.calculation_mode == "Manual":
             return
 
         self.salary_payable = flt(
@@ -242,6 +275,10 @@ class KSAEOSCalculation(Document):
     # Recovery / Deductions
     # ------------------------------------------------------------------
     def calculate_recovery(self):
+        # Skip if Manual mode
+        if self.calculation_mode == "Manual":
+            return
+            
         self.total_recovery = flt(
             flt(self.visa_iqama_expense)
             + flt(self.loan_advance_recovery)
@@ -254,6 +291,10 @@ class KSAEOSCalculation(Document):
     # Final Summary
     # ------------------------------------------------------------------
     def calculate_summary(self):
+        # Skip if Manual mode
+        if self.calculation_mode == "Manual":
+            return
+            
         self.total_gratuity = flt(self.gratuity_payable)
         self.total_leave_salary = flt(self.leave_salary_payable)
         self.total_overtime = flt(self.overtime_payable)

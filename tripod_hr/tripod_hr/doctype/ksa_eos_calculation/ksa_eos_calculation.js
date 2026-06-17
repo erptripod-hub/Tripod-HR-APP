@@ -71,6 +71,8 @@ frappe.ui.form.on('KSA EOS Calculation', {
 
     calculate_gratuity_preview: function(frm) {
         // Show a preview of the gratuity percentage based on separation type
+        if (frm.doc.calculation_mode === 'Manual') return;
+        
         let separation = frm.doc.separation_type;
         let years = frm.doc.employment_years || 0;
         let percentage = 100;
@@ -93,15 +95,32 @@ frappe.ui.form.on('KSA EOS Calculation', {
     },
 
     gross_salary: function(frm) {
+        if (frm.doc.calculation_mode === 'Manual') return;
         if (frm.doc.gross_salary) {
             frm.set_value('daily_wage', flt(frm.doc.gross_salary / 30, 2));
         }
     },
 
     days_worked_pending: function(frm) {
+        if (frm.doc.calculation_mode === 'Manual') return;
         if (frm.doc.gross_salary && frm.doc.days_worked_pending) {
             let daily = flt(frm.doc.gross_salary / 30);
             frm.set_value('current_month_payment', flt(daily * frm.doc.days_worked_pending, 2));
+        }
+    },
+    
+    calculation_mode: function(frm) {
+        // When switching to Manual, stop auto-calculations
+        if (frm.doc.calculation_mode === 'Manual') {
+            frappe.show_alert({
+                message: __('Manual mode: Auto-calculations disabled. You can edit all fields directly.'),
+                indicator: 'orange'
+            }, 5);
+        } else {
+            frappe.show_alert({
+                message: __('Auto mode: Calculations will be performed automatically.'),
+                indicator: 'green'
+            }, 5);
         }
     }
 });
