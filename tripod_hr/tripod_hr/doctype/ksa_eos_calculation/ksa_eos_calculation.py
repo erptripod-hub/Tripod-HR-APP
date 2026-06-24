@@ -391,33 +391,67 @@ def get_employee_details(employee):
 
     data["gross_salary"] = gross_salary
 
-    # Get leave balance
+    # Get leave balance - ONLY Annual Leave (encashable for EOS)
     leave_balance = 0
+    leaves_accrued = 0
+    leaves_utilized = 0
     try:
-        leaves = frappe.db.sql("""
-            SELECT SUM(la.total_leaves_allocated)
-            FROM `tabLeave Allocation` la
-            WHERE la.employee = %s
-            AND la.docstatus = 1
-            AND la.from_date <= CURDATE()
-            AND la.to_date >= CURDATE()
-        """, employee)
-        if leaves and leaves[0][0]:
-            leave_balance = flt(leaves[0][0])
-
-        leaves_taken = frappe.db.sql("""
-            SELECT SUM(la.total_leave_days)
-            FROM `tabLeave Application` la
-            WHERE la.employee = %s
-            AND la.docstatus = 1
-            AND la.status = 'Approved'
-        """, employee)
-        if leaves_taken and leaves_taken[0][0]:
-            leave_balance -= flt(leaves_taken[0][0])
-    except Exception:
+        # Get Annual Leave type for this company
+        # Annual Leave types typically have "Annual" in name or is_earned_leave = 1
+        annual_leave_types = frappe.db.sql("""
+            SELECT name FROM `tabLeave Type`
+            WHERE (name LIKE '%Annual%' OR is_earned_leave = 1)
+            AND allow_encashment = 1
+        """, as_list=True)
+        
+        if not annual_leave_types:
+            # Fallback - get any leave type with "Annual" in name
+            annual_leave_types = frappe.db.sql("""
+                SELECT name FROM `tabLeave Type`
+                WHERE name LIKE '%Annual%'
+            """, as_list=True)
+        
+        annual_leave_names = [lt[0] for lt in annual_leave_types] if annual_leave_types else []
+        
+        if annual_leave_names:
+            # Get total allocated leaves from date of joining
+            placeholders = ', '.join(['%s'] * len(annual_leave_names))
+            
+            allocated = frappe.db.sql("""
+                SELECT COALESCE(SUM(total_leaves_allocated), 0)
+                FROM `tabLeave Allocation`
+                WHERE employee = %s
+                AND docstatus = 1
+                AND leave_type IN ({})
+            """.format(placeholders), [employee] + annual_leave_names)
+            
+            if allocated and allocated[0][0]:
+                leaves_accrued = flt(allocated[0][0])
+            
+            # Get total utilized leaves
+            utilized = frappe.db.sql("""
+                SELECT COALESCE(SUM(total_leave_days), 0)
+                FROM `tabLeave Application`
+                WHERE employee = %s
+                AND docstatus = 1
+                AND status = 'Approved'
+                AND leave_type IN ({})
+            """.format(placeholders), [employee] + annual_leave_names)
+            
+            if utilized and utilized[0][0]:
+                leaves_utilized = flt(utilized[0][0])
+            
+            leave_balance = leaves_accrued - leaves_utilized
+            if leave_balance < 0:
+                leave_balance = 0
+                
+    except Exception as ex:
+        frappe.log_error(f"KSA EOS Leave fetch error: {ex}", "KSA EOS Calculation")
         leave_balance = 0
 
-    data["leaves_balance"] = leave_balance if leave_balance > 0 else 0
+    data["leaves_accrued"] = leaves_accrued
+    data["leaves_utilized"] = leaves_utilized
+    data["leaves_balance"] = leave_balance
 
     # Active loan recovery
     try:

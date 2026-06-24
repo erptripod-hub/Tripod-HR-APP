@@ -88,6 +88,12 @@ frappe.ui.form.on('UAE EOS Calculation', {
                 }
 
                 // Leave & Loan
+                if (d.leaves_accrued !== undefined) {
+                    frm.set_value('leaves_accrued', d.leaves_accrued);
+                }
+                if (d.leaves_utilized !== undefined) {
+                    frm.set_value('leaves_utilized', d.leaves_utilized);
+                }
                 if (d.leaves_balance !== undefined) {
                     frm.set_value('leaves_balance', d.leaves_balance);
                 }

@@ -46,6 +46,8 @@ frappe.ui.form.on('KSA EOS Calculation', {
                         frm.set_value('bank_account', data.bank_account);
                         frm.set_value('iban', data.iban);
                         frm.set_value('gross_salary', data.gross_salary);
+                        frm.set_value('leaves_accrued', data.leaves_accrued);
+                        frm.set_value('leaves_utilized', data.leaves_utilized);
                         frm.set_value('leaves_balance', data.leaves_balance);
                         if (data.loan_advance_recovery) {
                             frm.set_value('loan_advance_recovery', data.loan_advance_recovery);
