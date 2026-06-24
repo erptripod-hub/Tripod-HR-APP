@@ -50,10 +50,88 @@ frappe.ui.form.on('KSA EOS Calculation', {
                         if (data.loan_advance_recovery) {
                             frm.set_value('loan_advance_recovery', data.loan_advance_recovery);
                         }
+                        // Trigger service period calculation after employee fetch
+                        setTimeout(() => {
+                            frm.trigger('calculate_service_period');
+                        }, 500);
                     }
                 }
             });
         }
+    },
+
+    date_of_joining: function(frm) {
+        frm.trigger('calculate_service_period');
+    },
+
+    date_of_settlement: function(frm) {
+        frm.trigger('calculate_service_period');
+        frm.trigger('calculate_gratuity_preview');
+    },
+
+    unpaid_leaves_taken: function(frm) {
+        frm.trigger('calculate_service_period');
+    },
+
+    // ============ SERVICE PERIOD CALCULATION ============
+    calculate_service_period: function(frm) {
+        if (frm.doc.calculation_mode === 'Manual') return;
+        
+        if (frm.doc.date_of_joining && frm.doc.date_of_settlement) {
+            let joining = frappe.datetime.str_to_obj(frm.doc.date_of_joining);
+            let settlement = frappe.datetime.str_to_obj(frm.doc.date_of_settlement);
+            
+            // Calculate days
+            let days = frappe.datetime.get_diff(settlement, joining);
+            
+            if (days > 0) {
+                let years = days / 365.25;
+                let unpaid = flt(frm.doc.unpaid_leaves_taken) || 0;
+                let eligible = days - unpaid;
+                
+                frm.set_value('total_service_days', days);
+                frm.set_value('employment_years', flt(years, 4));
+                frm.set_value('days_eligible_for_gratuity', Math.round(eligible));
+                
+                // Trigger gratuity calculation
+                frm.trigger('calculate_gratuity');
+            }
+        }
+    },
+
+    // ============ GRATUITY CALCULATION ============
+    calculate_gratuity: function(frm) {
+        if (frm.doc.calculation_mode === 'Manual') return;
+        if (frm.doc.override_gratuity) return;
+        
+        let years = flt(frm.doc.employment_years) || 0;
+        let daily = flt(frm.doc.daily_wage) || 0;
+        
+        // Calculate gratuity days (KSA: 15 days for first 5 yrs, 30 days after)
+        let days_first_five = 0;
+        let days_after_five = 0;
+        
+        if (years <= 5) {
+            days_first_five = years * 15;
+        } else {
+            days_first_five = 5 * 15; // 75 days
+            days_after_five = (years - 5) * 30;
+        }
+        
+        let total_days = days_first_five + days_after_five;
+        let gratuity_before = daily * total_days;
+        
+        // Get percentage
+        let percentage = frm.doc.gratuity_percentage || 100;
+        let gratuity_payable = gratuity_before * (percentage / 100);
+        
+        frm.set_value('gratuity_days_first_five_years', flt(days_first_five, 2));
+        frm.set_value('gratuity_days_after_five_years', flt(days_after_five, 2));
+        frm.set_value('total_gratuity_days', flt(total_days, 2));
+        frm.set_value('gratuity_before_percentage', flt(gratuity_before, 2));
+        frm.set_value('gratuity_payable', flt(gratuity_payable, 2));
+        
+        frm.trigger('calculate_summary');
     },
 
     separation_type: function(frm) {
@@ -70,7 +148,7 @@ frappe.ui.form.on('KSA EOS Calculation', {
     },
 
     calculate_gratuity_preview: function(frm) {
-        // Show a preview of the gratuity percentage based on separation type
+        // Calculate gratuity percentage based on separation type
         if (frm.doc.calculation_mode === 'Manual') return;
         
         let separation = frm.doc.separation_type;
@@ -88,27 +166,173 @@ frappe.ui.form.on('KSA EOS Calculation', {
         }
 
         frm.set_value('gratuity_percentage', percentage);
+        frm.trigger('calculate_gratuity');
     },
 
-    date_of_settlement: function(frm) {
-        frm.trigger('calculate_gratuity_preview');
-    },
-
+    // ============ SALARY CALCULATIONS ============
     gross_salary: function(frm) {
         if (frm.doc.calculation_mode === 'Manual') return;
         if (frm.doc.gross_salary) {
             frm.set_value('daily_wage', flt(frm.doc.gross_salary / 30, 2));
+            frm.set_value('leave_daily_rate', flt(frm.doc.gross_salary / 30, 2));
+            frm.trigger('calculate_gratuity');
+            frm.trigger('calculate_leave_salary');
         }
     },
 
-    days_worked_pending: function(frm) {
-        if (frm.doc.calculation_mode === 'Manual') return;
-        if (frm.doc.gross_salary && frm.doc.days_worked_pending) {
-            let daily = flt(frm.doc.gross_salary / 30);
-            frm.set_value('current_month_payment', flt(daily * frm.doc.days_worked_pending, 2));
-        }
+    daily_wage: function(frm) {
+        frm.trigger('calculate_gratuity');
     },
-    
+
+    // ============ LEAVE SALARY CALCULATION ============
+    leaves_balance: function(frm) {
+        frm.trigger('calculate_leave_salary');
+    },
+
+    leave_salary_paid: function(frm) {
+        frm.trigger('calculate_leave_salary');
+    },
+
+    calculate_leave_salary: function(frm) {
+        if (frm.doc.calculation_mode === 'Manual') return;
+        if (frm.doc.override_leave) return;
+        
+        let daily = flt(frm.doc.leave_daily_rate) || flt(frm.doc.daily_wage) || 0;
+        let balance = flt(frm.doc.leaves_balance) || 0;
+        let already_paid = flt(frm.doc.leave_salary_paid) || 0;
+        
+        let leave_payable = (daily * balance) - already_paid;
+        if (leave_payable < 0) leave_payable = 0;
+        
+        frm.set_value('leave_salary_payable', flt(leave_payable, 2));
+        frm.trigger('calculate_summary');
+    },
+
+    // ============ OVERTIME CALCULATION ============
+    pending_overtime_hours: function(frm) {
+        frm.trigger('calculate_overtime');
+    },
+
+    overtime_rate_per_hour: function(frm) {
+        frm.trigger('calculate_overtime');
+    },
+
+    calculate_overtime: function(frm) {
+        if (frm.doc.calculation_mode === 'Manual') return;
+        if (frm.doc.override_overtime) return;
+        
+        let hours = flt(frm.doc.pending_overtime_hours) || 0;
+        let rate = flt(frm.doc.overtime_rate_per_hour) || 0;
+        
+        frm.set_value('overtime_payable', flt(hours * rate, 2));
+        frm.trigger('calculate_summary');
+    },
+
+    // ============ PENDING SALARY CALCULATION ============
+    days_worked_pending: function(frm) {
+        frm.trigger('calculate_pending_salary');
+    },
+
+    current_month_payment: function(frm) {
+        frm.trigger('calculate_salary_payable');
+    },
+
+    pending_salary_last_month: function(frm) {
+        frm.trigger('calculate_salary_payable');
+    },
+
+    air_ticket_allowance: function(frm) {
+        frm.trigger('calculate_salary_payable');
+    },
+
+    other_dues: function(frm) {
+        frm.trigger('calculate_salary_payable');
+    },
+
+    calculate_pending_salary: function(frm) {
+        if (frm.doc.calculation_mode === 'Manual') return;
+        
+        let gross = flt(frm.doc.gross_salary) || 0;
+        let days = frm.doc.days_worked_pending || 0;
+        
+        // Use actual days in month if settlement date is set
+        let days_in_month = 30;
+        if (frm.doc.date_of_settlement) {
+            let d = frappe.datetime.str_to_obj(frm.doc.date_of_settlement);
+            days_in_month = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+        }
+        
+        if (gross && days) {
+            frm.set_value('current_month_payment', flt((gross / days_in_month) * days, 2));
+        }
+        
+        frm.trigger('calculate_salary_payable');
+    },
+
+    calculate_salary_payable: function(frm) {
+        if (frm.doc.calculation_mode === 'Manual') return;
+        if (frm.doc.override_salary_payable) return;
+        
+        let salary = flt(frm.doc.current_month_payment) + 
+                     flt(frm.doc.pending_salary_last_month) + 
+                     flt(frm.doc.air_ticket_allowance) + 
+                     flt(frm.doc.other_dues);
+        
+        frm.set_value('salary_payable', flt(salary, 2));
+        frm.trigger('calculate_summary');
+    },
+
+    // ============ RECOVERY CALCULATION ============
+    visa_iqama_expense: function(frm) {
+        frm.trigger('calculate_recovery');
+    },
+
+    loan_advance_recovery: function(frm) {
+        frm.trigger('calculate_recovery');
+    },
+
+    notice_period_shortfall: function(frm) {
+        frm.trigger('calculate_recovery');
+    },
+
+    other_recovery: function(frm) {
+        frm.trigger('calculate_recovery');
+    },
+
+    calculate_recovery: function(frm) {
+        if (frm.doc.calculation_mode === 'Manual') return;
+        
+        let total = flt(frm.doc.visa_iqama_expense) + 
+                    flt(frm.doc.loan_advance_recovery) + 
+                    flt(frm.doc.notice_period_shortfall) + 
+                    flt(frm.doc.other_recovery);
+        
+        frm.set_value('total_recovery', flt(total, 2));
+        frm.trigger('calculate_summary');
+    },
+
+    // ============ FINAL SUMMARY ============
+    calculate_summary: function(frm) {
+        if (frm.doc.calculation_mode === 'Manual') return;
+        
+        let gratuity = flt(frm.doc.gratuity_payable) || 0;
+        let leave = flt(frm.doc.leave_salary_payable) || 0;
+        let overtime = flt(frm.doc.overtime_payable) || 0;
+        let salary = flt(frm.doc.salary_payable) || 0;
+        let recovery = flt(frm.doc.total_recovery) || 0;
+        
+        let gross_total = gratuity + leave + overtime + salary;
+        let net = gross_total - recovery;
+        
+        frm.set_value('total_gratuity', flt(gratuity, 2));
+        frm.set_value('total_leave_salary', flt(leave, 2));
+        frm.set_value('total_overtime', flt(overtime, 2));
+        frm.set_value('total_salary_payable', flt(salary, 2));
+        frm.set_value('gross_total', flt(gross_total, 2));
+        frm.set_value('total_deductions', flt(recovery, 2));
+        frm.set_value('net_payable', flt(net, 2));
+    },
+
     calculation_mode: function(frm) {
         // When switching to Manual, stop auto-calculations
         if (frm.doc.calculation_mode === 'Manual') {
@@ -121,6 +345,8 @@ frappe.ui.form.on('KSA EOS Calculation', {
                 message: __('Auto mode: Calculations will be performed automatically.'),
                 indicator: 'green'
             }, 5);
+            // Recalculate everything
+            frm.trigger('calculate_service_period');
         }
     }
 });
