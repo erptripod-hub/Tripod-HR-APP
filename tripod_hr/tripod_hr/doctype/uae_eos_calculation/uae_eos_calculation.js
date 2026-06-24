@@ -141,7 +141,7 @@ frappe.ui.form.on('UAE EOS Calculation', {
     overtime_rate_per_hour: function(frm) { frm.trigger('calc_overtime'); frm.trigger('calc_summary'); },
     override_overtime:  function(frm) { frm.trigger('calc_overtime'); frm.trigger('calc_summary'); },
     days_worked_pending: function(frm) { frm.trigger('calc_pending_salary'); frm.trigger('calc_summary'); },
-    unpaid_leaves_taken: function(frm) { frm.trigger('calc_pending_salary'); frm.trigger('calc_summary'); },
+    unpaid_leaves_taken: function(frm) { frm.trigger('calc_service_period'); frm.trigger('calc_pending_salary'); frm.trigger('calc_summary'); },
     air_ticket_allowance: function(frm) { frm.trigger('calc_pending_salary'); frm.trigger('calc_summary'); },
     override_salary_payable: function(frm) { frm.trigger('calc_pending_salary'); frm.trigger('calc_summary'); },
     visa_labour_card_expense: function(frm) { frm.trigger('calc_recovery'); frm.trigger('calc_summary'); },
@@ -192,6 +192,10 @@ frappe.ui.form.on('UAE EOS Calculation', {
         }
         frm.set_value('total_service_days', days);
         frm.set_value('employment_years', flt(days / 365.25, 4));
+        
+        // Calculate days eligible for gratuity (service days minus unpaid leaves)
+        const unpaid = flt(frm.doc.unpaid_leaves_taken) || 0;
+        frm.set_value('days_eligible_for_gratuity', Math.round(days - unpaid));
     },
 
     calc_gratuity: function(frm) {
