@@ -1,0 +1,56 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-06-26 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "career_goal",
+  "training_needed",
+  "timeline",
+  "company_support"
+ ],
+ "fields": [
+  {
+   "columns": 3,
+   "fieldname": "career_goal",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Career Goal"
+  },
+  {
+   "columns": 3,
+   "fieldname": "training_needed",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Training or Skill Development Needed"
+  },
+  {
+   "columns": 2,
+   "fieldname": "timeline",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Timeline"
+  },
+  {
+   "columns": 2,
+   "fieldname": "company_support",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Support from Company"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-06-26 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Tripod HR",
+ "name": "Project Appraisal Career Development",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
