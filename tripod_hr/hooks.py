@@ -204,6 +204,7 @@ override_doctype_class = {
 
 scheduler_events = {
     "monthly": [
-        "tripod_hr.tripod_hr.ctc_management.gratuity_provision.update_all_gratuity_provisions"
+        "tripod_hr.tripod_hr.ctc_management.gratuity_provision.update_all_gratuity_provisions",
+        "tripod_hr.tripod_hr.ctc_management.budget_snapshot.monthly_capture"
     ]
 }
