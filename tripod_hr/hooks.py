@@ -200,3 +200,9 @@ override_doctype_class = {
 # auth_hooks = [
 #	"tripod_hr.auth.validate"
 # ]
+
+scheduler_events = {
+    "monthly": [
+        "tripod_hr.tripod_hr.ctc_management.gratuity_provision.update_all_gratuity_provisions"
+    ]
+}
