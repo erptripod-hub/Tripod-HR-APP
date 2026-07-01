@@ -53,7 +53,7 @@ def get_data(filters):
         SELECT
             COALESCE(e.custom_region, '(none)')          AS region,
             COALESCE(e.custom_budget_unit, '(none)')     AS budget_unit,
-            COALESCE(e.custom_sub_department, '(none)')  AS section,
+            COALESCE(NULLIF(e.custom_sub_department,''), 'Unassigned')  AS section,
             COUNT(e.name)                                AS hc,
             SUM(COALESCE(e.custom_total_salary,0))       AS pay,
             SUM(COALESCE(e.custom_accommodation,0)+COALESCE(e.custom_visa,0)+COALESCE(e.custom_iqama,0)

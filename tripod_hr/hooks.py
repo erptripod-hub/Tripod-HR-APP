@@ -73,6 +73,7 @@ doctype_js = {
 after_migrate = [
     "tripod_hr.tripod_hr.ctc_management.install_ctc_fields.install",
     "tripod_hr.tripod_hr.payroll_filter.install_employment_type_field.install",
+    "tripod_hr.tripod_hr.ctc_management.install_budget_dashboard.after_migrate"
 ]
 
 # Uninstallation
