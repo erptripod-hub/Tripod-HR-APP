@@ -1,6 +1,6 @@
 # Copyright (c) 2026, Tripod Mena
 # CTC Budget Summary — Region -> Budget Unit -> Section, with Pay, Allowances,
-# GOSI, Monthly CTC, Annual CTC, and Gratuity Provision (shown separately, NOT in CTC).
+# GOSI, Monthly CTC, and Annual CTC. (Gratuity provision removed from display.)
 # Reads live from Employee master. Currency shown per-region (AED for UAE, SAR for KSA).
 
 import frappe
@@ -33,7 +33,6 @@ def get_columns():
         {"label": _("GOSI"), "fieldname": "gosi", "fieldtype": "Float", "width": 90, "precision": 0},
         {"label": _("Monthly CTC"), "fieldname": "monthly_ctc", "fieldtype": "Float", "width": 130, "precision": 0},
         {"label": _("Annual CTC"), "fieldname": "annual_ctc", "fieldtype": "Float", "width": 140, "precision": 0},
-        {"label": _("Gratuity Provision"), "fieldname": "gratuity_provision", "fieldtype": "Float", "width": 150, "precision": 0},
     ]
 
 
@@ -60,8 +59,7 @@ def get_data(filters):
                 +COALESCE(e.custom_medical_insurance,0)+COALESCE(e.custom_ticket_allowance,0))  AS allowances,
             SUM(COALESCE(e.custom_gosi,0))               AS gosi,
             SUM(COALESCE(e.custom_monthly_ctc,0))        AS monthly_ctc,
-            SUM(COALESCE(e.custom_annual_ctc,0))         AS annual_ctc,
-            SUM(COALESCE(e.custom_gratuity_monthly,0))   AS gratuity_provision
+            SUM(COALESCE(e.custom_annual_ctc,0))         AS annual_ctc
         FROM `tabEmployee` e
         WHERE {where}
         GROUP BY e.custom_region, e.custom_budget_unit, e.custom_sub_department
@@ -74,7 +72,7 @@ def get_data(filters):
         tree.setdefault(r["region"], {}).setdefault(r["budget_unit"], []).append(r)
 
     data = []
-    MEASURES = ["hc", "pay", "allowances", "gosi", "monthly_ctc", "annual_ctc", "gratuity_provision"]
+    MEASURES = ["hc", "pay", "allowances", "gosi", "monthly_ctc", "annual_ctc"]
     grand = {m: 0 for m in MEASURES}
 
     for region in sorted(tree, key=lambda x: REGION_ORDER.get(x, 9)):
@@ -129,5 +127,4 @@ def get_report_summary(data):
         {"value": grand.get("pay", 0), "label": _("Actual Pay / mo"), "datatype": "Float", "indicator": "Blue"},
         {"value": grand.get("monthly_ctc", 0), "label": _("Monthly CTC"), "datatype": "Float", "indicator": "Green"},
         {"value": grand.get("annual_ctc", 0), "label": _("Annual CTC"), "datatype": "Float", "indicator": "Green"},
-        {"value": grand.get("gratuity_provision", 0), "label": _("Gratuity Provision"), "datatype": "Float", "indicator": "Orange"},
     ]
