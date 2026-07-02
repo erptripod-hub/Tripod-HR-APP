@@ -8,9 +8,9 @@
  "owner": "Administrator",
  "page_name": "HR Budget Dashboard",
  "roles": [
-  {"role": "System Manager"},
-  {"role": "HR Manager"},
-  {"role": "HR User"}
+  {
+   "role": "HR Manager"
+  }
  ],
  "standard": "Yes",
  "title": "HR Budget Dashboard"
