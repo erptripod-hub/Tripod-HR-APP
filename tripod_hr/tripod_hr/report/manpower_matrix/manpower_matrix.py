@@ -61,7 +61,7 @@ def get_data(filters):
             COUNT(e.name)                                AS cnt
         FROM `tabEmployee` e
         WHERE e.company = %(company)s
-          AND e.status = 'Active'
+          AND e.status != 'Left'
         GROUP BY e.department, e.custom_sub_department, e.location
         """,
         {"company": company},
