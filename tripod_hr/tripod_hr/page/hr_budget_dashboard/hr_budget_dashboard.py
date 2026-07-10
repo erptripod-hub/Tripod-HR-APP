@@ -9,6 +9,10 @@ UNIT_REGION = {
     "Fit Out UAE": "UAE", "Dubai Production": "UAE", "Dubai Office": "UAE",
     "KSA Office": "KSA", "KSA National": "KSA", "KSA Labour": "KSA", "KSA Fit Out": "KSA",
 }
+OWNERS = ["TM-EMP-0021", "TM-EMP-0022"]        # excluded from budget entirely
+CEO = "TGK-EMP-0284"                            # cost split across two offices
+CEO_DUBAI_SHARE = 0.40                          # 40% Dubai Office, 60% stays KSA Office
+
 MONTHS = ["2026-07", "2026-08", "2026-09", "2026-10", "2026-11", "2026-12"]
 MONTH_LBL = ["Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
@@ -45,9 +49,10 @@ def _active(company):
             SUM(COALESCE(custom_annual_ctc, 0))                    AS ctc_yr
         FROM `tabEmployee`
         WHERE {cond}
+          AND name NOT IN %(owners)s
         GROUP BY unit, region
         """,
-        vals, as_dict=True,
+        dict(vals, owners=tuple(OWNERS)), as_dict=True,
     )
 
     by_unit = {}
@@ -60,6 +65,24 @@ def _active(company):
         u = by_unit.setdefault(r["unit"], {"hc": 0, "salary": 0, "ctc": 0, "ctc_yr": 0})
         for k in u:
             u[k] += r[k] or 0
+
+    if not company:
+        ceo = frappe.db.get_value(
+            "Employee", CEO,
+            ["custom_budget_unit", "custom_total_salary", "custom_monthly_ctc", "custom_annual_ctc"],
+            as_dict=True,
+        )
+        if ceo and ceo.custom_budget_unit in by_unit:
+            share = CEO_DUBAI_SHARE
+            home = by_unit[ceo.custom_budget_unit]
+            dubai = by_unit.setdefault("Dubai Office", {"hc": 0, "salary": 0, "ctc": 0, "ctc_yr": 0})
+            for fld, key in [("custom_total_salary", "salary"),
+                             ("custom_monthly_ctc", "ctc"),
+                             ("custom_annual_ctc", "ctc_yr")]:
+                amt = (ceo.get(fld) or 0) * share
+                home[key] -= amt
+                dubai[key] += amt
+            # headcount stays in CEO's home unit; only cost is split
 
     regions = {}
     for unit, m in by_unit.items():
