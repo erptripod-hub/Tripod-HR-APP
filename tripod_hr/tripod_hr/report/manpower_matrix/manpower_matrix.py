@@ -62,7 +62,7 @@ def get_data(filters):
         FROM `tabEmployee` e
         WHERE e.company = %(company)s
           AND e.status != 'Left'
-          AND e.department IN ('Production  - TM', 'Fitout - TM', 'Logistics - TM')
+          AND e.employment_type = 'Labour'
         GROUP BY e.department, e.custom_sub_department, e.location
         """,
         {"company": company},
