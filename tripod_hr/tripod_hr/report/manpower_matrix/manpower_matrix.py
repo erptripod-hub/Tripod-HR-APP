@@ -44,6 +44,7 @@ def get_columns():
     ]
     for loc in LOCATIONS:
         cols.append({"label": _(loc), "fieldname": LOC_KEY[loc], "fieldtype": "Int", "width": 115})
+    cols.append({"label": _("Unmapped"), "fieldname": "unmapped", "fieldtype": "Int", "width": 100})
     cols.append({"label": _("Total"), "fieldname": "total", "fieldtype": "Int", "width": 90})
     return cols
 
@@ -60,11 +61,10 @@ def get_data(filters):
             COUNT(e.name)                                AS cnt
         FROM `tabEmployee` e
         WHERE e.company = %(company)s
-          AND e.status NOT IN ('Left', 'Inactive')
-          AND e.location IN %(locs)s
+          AND e.status = 'Active'
         GROUP BY e.department, e.custom_sub_department, e.location
         """,
-        {"company": company, "locs": tuple(LOCATIONS)},
+        {"company": company},
         as_dict=True,
     )
 
@@ -73,24 +73,22 @@ def get_data(filters):
     for r in rows:
         dept = r["department"]
         sec = r["section"]
-        key = LOC_KEY.get(r["location"])
-        if not key:
-            continue
+        key = LOC_KEY.get(r["location"]) or "unmapped"
         tree.setdefault(dept, {}).setdefault(sec, {})
         tree[dept][sec][key] = tree[dept][sec].get(key, 0) + r["cnt"]
 
+    col_keys = [LOC_KEY[l] for l in LOCATIONS] + ["unmapped"]
     data = []
-    grand = {LOC_KEY[l]: 0 for l in LOCATIONS}
+    grand = {k: 0 for k in col_keys}
     grand_total = 0
 
     for dept in sorted(tree, key=lambda d: DEPT_ORDER.get(d, 9)):
-        dept_tot = {LOC_KEY[l]: 0 for l in LOCATIONS}
+        dept_tot = {k: 0 for k in col_keys}
         sec_rows = []
         for sec in sorted(tree[dept], key=lambda s: -sum(tree[dept][s].values())):
             row = {"department": "", "section": sec}
             st = 0
-            for l in LOCATIONS:
-                k = LOC_KEY[l]
+            for k in col_keys:
                 v = tree[dept][sec].get(k, 0)
                 row[k] = v
                 dept_tot[k] += v
@@ -101,8 +99,7 @@ def get_data(filters):
         # Department header row (bold, with its totals)
         dept_row = {"department": dept, "section": "", "_dept": 1}
         dt = 0
-        for l in LOCATIONS:
-            k = LOC_KEY[l]
+        for k in col_keys:
             dept_row[k] = dept_tot[k]
             grand[k] += dept_tot[k]
             dt += dept_tot[k]
@@ -114,8 +111,8 @@ def get_data(filters):
 
     # Grand total row
     grand_row = {"department": "GRAND TOTAL", "section": "", "total": grand_total, "_grand": 1}
-    for l in LOCATIONS:
-        grand_row[LOC_KEY[l]] = grand[LOC_KEY[l]]
+    for k in col_keys:
+        grand_row[k] = grand[k]
     data.append(grand_row)
 
     return data
