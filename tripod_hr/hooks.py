@@ -113,6 +113,16 @@ override_doctype_class = {
 # ---------------
 # Hook on document methods and events
 
+doc_events = {
+	"Employee": {
+		"before_save": "tripod_hr.events.ctc_automation.employee_before_save"
+	},
+	"Salary Structure Assignment": {
+		"on_submit": "tripod_hr.events.ctc_automation.ssa_on_submit",
+		"on_cancel": "tripod_hr.events.ctc_automation.ssa_on_cancel"
+	}
+}
+
 # doc_events = {
 #	"*": {
 #		"on_update": "method",
