@@ -1,0 +1,358 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-06-26 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "appraisal_cycle",
+  "employee",
+  "employee_name",
+  "employee_number",
+  "department",
+  "designation",
+  "line_manager",
+  "line_manager_user",
+  "line_manager_name",
+  "column_break_hdr",
+  "reviewer_name",
+  "reviewer_title",
+  "date_current_review",
+  "date_last_review",
+  "date_submitted",
+  "section_break_ratings",
+  "ratings_intro",
+  "rate_quality_of_work",
+  "remarks_quality_of_work",
+  "rate_communication",
+  "remarks_communication",
+  "rate_takes_initiative",
+  "remarks_takes_initiative",
+  "rate_collaboration",
+  "remarks_collaboration",
+  "rate_problem_solving",
+  "remarks_problem_solving",
+  "rate_client_relations",
+  "remarks_client_relations",
+  "section_break_total",
+  "total_score",
+  "section_break_prev_goals",
+  "previous_goals",
+  "section_break_next_goals",
+  "next_goals",
+  "section_break_career",
+  "career_development",
+  "section_break_comments",
+  "reviewer_comments",
+  "column_break_comments",
+  "employee_comments",
+  "section_break_workflow",
+  "workflow_state"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "PTA-.YYYY.-",
+   "reqd": 1
+  },
+  {
+   "fieldname": "appraisal_cycle",
+   "fieldtype": "Link",
+   "label": "Appraisal Cycle",
+   "options": "Appraisal Cycle"
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "employee.employee_name",
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "label": "Employee Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.employee_number",
+   "fieldname": "employee_number",
+   "fieldtype": "Data",
+   "label": "Employee Number",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.department",
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "label": "Department",
+   "options": "Department",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.designation",
+   "fieldname": "designation",
+   "fieldtype": "Link",
+   "label": "Position Held",
+   "options": "Designation",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "employee.reports_to",
+   "fieldname": "line_manager",
+   "fieldtype": "Link",
+   "label": "Line Manager ID",
+   "options": "Employee",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fetch_from": "line_manager.user_id",
+   "fieldname": "line_manager_user",
+   "fieldtype": "Link",
+   "label": "Line Manager User",
+   "options": "User",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fetch_from": "employee.custom_reports_to_name",
+   "fieldname": "line_manager_name",
+   "fieldtype": "Data",
+   "label": "Line Manager",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_hdr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "reviewer_name",
+   "fieldtype": "Data",
+   "label": "Reviewer Name"
+  },
+  {
+   "fieldname": "reviewer_title",
+   "fieldtype": "Data",
+   "label": "Reviewer Title"
+  },
+  {
+   "default": "Today",
+   "fieldname": "date_current_review",
+   "fieldtype": "Date",
+   "label": "Date of Current Review"
+  },
+  {
+   "fieldname": "date_last_review",
+   "fieldtype": "Data",
+   "label": "Date of Last Review"
+  },
+  {
+   "fieldname": "date_submitted",
+   "fieldtype": "Date",
+   "label": "Date Submitted"
+  },
+  {
+   "fieldname": "section_break_ratings",
+   "fieldtype": "Section Break",
+   "label": "Performance Ratings"
+  },
+  {
+   "fieldname": "ratings_intro",
+   "fieldtype": "HTML",
+   "options": "<p style='color:#6c757d;margin:0 0 10px'>Rate each area: <b>1</b> Needs Improvement &bull; <b>2</b> Below Expectations &bull; <b>3</b> Meets Expectations &bull; <b>4</b> Exceeds Expectations &bull; <b>5</b> Outstanding</p>"
+  },
+  {
+   "fieldname": "rate_quality_of_work",
+   "fieldtype": "Select",
+   "label": "Quality of Work",
+   "options": "\n1 - Needs Improvement\n2 - Below Expectations\n3 - Meets Expectations\n4 - Exceeds Expectations\n5 - Outstanding"
+  },
+  {
+   "fieldname": "remarks_quality_of_work",
+   "fieldtype": "Small Text",
+   "label": "Remarks - Quality of Work"
+  },
+  {
+   "fieldname": "rate_communication",
+   "fieldtype": "Select",
+   "label": "Communication",
+   "options": "\n1 - Needs Improvement\n2 - Below Expectations\n3 - Meets Expectations\n4 - Exceeds Expectations\n5 - Outstanding"
+  },
+  {
+   "fieldname": "remarks_communication",
+   "fieldtype": "Small Text",
+   "label": "Remarks - Communication"
+  },
+  {
+   "fieldname": "rate_takes_initiative",
+   "fieldtype": "Select",
+   "label": "Takes Initiative",
+   "options": "\n1 - Needs Improvement\n2 - Below Expectations\n3 - Meets Expectations\n4 - Exceeds Expectations\n5 - Outstanding"
+  },
+  {
+   "fieldname": "remarks_takes_initiative",
+   "fieldtype": "Small Text",
+   "label": "Remarks - Takes Initiative"
+  },
+  {
+   "fieldname": "rate_collaboration",
+   "fieldtype": "Select",
+   "label": "Collaboration and Teamwork",
+   "options": "\n1 - Needs Improvement\n2 - Below Expectations\n3 - Meets Expectations\n4 - Exceeds Expectations\n5 - Outstanding"
+  },
+  {
+   "fieldname": "remarks_collaboration",
+   "fieldtype": "Small Text",
+   "label": "Remarks - Collaboration and Teamwork"
+  },
+  {
+   "fieldname": "rate_problem_solving",
+   "fieldtype": "Select",
+   "label": "Problem-Solving",
+   "options": "\n1 - Needs Improvement\n2 - Below Expectations\n3 - Meets Expectations\n4 - Exceeds Expectations\n5 - Outstanding"
+  },
+  {
+   "fieldname": "remarks_problem_solving",
+   "fieldtype": "Small Text",
+   "label": "Remarks - Problem-Solving"
+  },
+  {
+   "fieldname": "rate_client_relations",
+   "fieldtype": "Select",
+   "label": "Client and Customer Relations",
+   "options": "\n1 - Needs Improvement\n2 - Below Expectations\n3 - Meets Expectations\n4 - Exceeds Expectations\n5 - Outstanding"
+  },
+  {
+   "fieldname": "remarks_client_relations",
+   "fieldtype": "Small Text",
+   "label": "Remarks - Client and Customer Relations"
+  },
+  {
+   "fieldname": "section_break_total",
+   "fieldtype": "Section Break"
+  },
+  {
+   "bold": 1,
+   "description": "Auto-calculated from the 6 ratings above (maximum 30)",
+   "fieldname": "total_score",
+   "fieldtype": "Int",
+   "label": "Total Score (out of 30)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_prev_goals",
+   "fieldtype": "Section Break",
+   "label": "Previously Set Goals"
+  },
+  {
+   "fieldname": "previous_goals",
+   "fieldtype": "Table",
+   "label": "Previously Set Goals",
+   "options": "Project Appraisal Previous Goal"
+  },
+  {
+   "fieldname": "section_break_next_goals",
+   "fieldtype": "Section Break",
+   "label": "Goals for Next Review"
+  },
+  {
+   "fieldname": "next_goals",
+   "fieldtype": "Table",
+   "label": "Goals for Next Review",
+   "options": "Project Appraisal Next Goal"
+  },
+  {
+   "fieldname": "section_break_career",
+   "fieldtype": "Section Break",
+   "label": "Career Development"
+  },
+  {
+   "fieldname": "career_development",
+   "fieldtype": "Table",
+   "label": "Career Development",
+   "options": "Project Appraisal Career Development"
+  },
+  {
+   "fieldname": "section_break_comments",
+   "fieldtype": "Section Break",
+   "label": "Overall Summary"
+  },
+  {
+   "fieldname": "reviewer_comments",
+   "fieldtype": "Text",
+   "label": "Additional Reviewer Comments"
+  },
+  {
+   "fieldname": "column_break_comments",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "employee_comments",
+   "fieldtype": "Text",
+   "label": "Employee Comments"
+  },
+  {
+   "fieldname": "section_break_workflow",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "workflow_state",
+   "fieldtype": "Link",
+   "label": "Workflow State",
+   "options": "Workflow State",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-06-26 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Tripod HR",
+ "name": "Project Team Appraisal",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Reporting Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Employee",
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
