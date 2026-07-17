@@ -22,7 +22,7 @@ frappe.pages['hr-budget-dashboard'].on_page_load = function (wrapper) {
 
 	$('<style>').text(
 		'.hbd{padding:22px 26px;max-width:1080px;margin:0 auto;color:#16233A;font-family:Inter,system-ui,sans-serif}' +
-		'.hbd .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:8px}' +
+		'.hbd .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:8px}' +
 		'.hbd .kpi{background:#fff;border:1px solid #E5E3DC;border-radius:12px;padding:14px 16px}' +
 		'.hbd .kpi .l{font-size:12px;color:#6B7280;font-weight:500}' +
 		'.hbd .kpi .v{font-size:26px;font-weight:600;line-height:1.1;margin-top:5px}' +
@@ -108,6 +108,7 @@ frappe.pages['hr-budget-dashboard'].on_page_load = function (wrapper) {
 
 		var html = '<div class="kpis">' +
 			kpi('Active headcount', fmt(grand.hc), '') +
+			kpi('Monthly Salary', fmt(a.current_salary), '') +
 			kpi('Monthly CTC', fmt(a.current_ctc), '') +
 			kpi('Planned hires', fmt(p.rows.filter(function (r) { return r.kind === 'grand'; })[0].hc), '') +
 			kpi('Projected CTC', fmt(projected), '+' + pct + '%') +
