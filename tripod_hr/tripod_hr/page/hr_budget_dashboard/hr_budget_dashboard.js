@@ -40,6 +40,11 @@ frappe.pages['hr-budget-dashboard'].on_page_load = function (wrapper) {
 		'.hbd tr.grand td{background:#16233A;color:#fff;font-weight:600;font-size:13px}' +
 		'.hbd .pill{display:inline-block;font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:20px}' +
 		'.hbd .u{background:#E5EEF6;color:#2A5C8A}.hbd .k{background:#E2F1EA;color:#1B7A5A}' +
+		'.hbd tr.dsg td{background:#FBFCFE;color:#3A4A63;font-size:12px;padding:6px 12px;border-bottom:1px solid #F5F4EF}' +
+		'.hbd tr.dsg td:first-child{padding-left:30px}' +
+		'.hbd .hclink{color:#185FA5;border-bottom:1px solid #185FA5;cursor:pointer}' +
+		'.hbd .chev{color:#9AA3B0;font-size:10px;margin-right:6px;cursor:pointer}' +
+		'.hbd td.pos{color:#0F6E56}.hbd td.neg{color:#A32D2D}' +
 		'.hbd .loading{padding:40px;text-align:center;color:#6B7280}'
 	).appendTo('head');
 
@@ -52,7 +57,7 @@ frappe.pages['hr-budget-dashboard'].on_page_load = function (wrapper) {
 		return '';
 	}
 
-	function activeTable(a) {
+	function activeTable(a, dsg) {
 		var h = '<div class="card"><table><thead><tr>' +
 			'<th>Unit</th><th>Head count</th><th>Salary / mo</th><th>CTC / mo</th>' +
 			'<th>Salary / yr</th><th>CTC / yr</th><th>Region</th></tr></thead><tbody>';
@@ -60,9 +65,28 @@ frappe.pages['hr-budget-dashboard'].on_page_load = function (wrapper) {
 		a.rows.forEach(function (r) {
 			var cls = r.kind === 'subtotal' ? 'sub' : (r.kind === 'grand' ? 'grand' : (r.kind === 'untagged' ? 'untag' : ''));
 			var pctv = tot ? (r.ctc / tot * 100).toFixed(1) + '%' : '';
-			h += '<tr class="' + cls + '"><td>' + r.unit + '</td><td>' + fmt(r.hc) + '</td><td>' +
+			var kids = (r.kind === 'unit' || r.kind === 'untagged') ? (dsg && dsg[r.unit]) : null;
+			var hasKids = kids && kids.length;
+
+			var label = r.unit;
+			var hcCell = fmt(r.hc);
+			if (hasKids) {
+				label = '<span class="chev" data-unit="' + r.unit + '">&#9654;</span>' + r.unit;
+				hcCell = '<span class="hclink" data-unit="' + r.unit + '">' + fmt(r.hc) + '</span>';
+			}
+
+			h += '<tr class="' + cls + '"><td>' + label + '</td><td>' + hcCell + '</td><td>' +
 				fmt(r.salary) + '</td><td>' + fmt(r.ctc) + '</td><td>' + fmt(r.salary_yr) + '</td><td>' +
 				fmt(r.ctc_yr) + '</td><td>' + (r.kind === 'unit' ? regPill(r.region) : '') + '</td></tr>';
+
+			if (hasKids) {
+				kids.forEach(function (k) {
+					h += '<tr class="dsg" data-parent="' + r.unit + '" style="display:none;">' +
+						'<td>' + k.designation + '</td><td>' + (k.hc ? fmt(k.hc) : '–') + '</td><td>' +
+						fmt(k.salary) + '</td><td>' + fmt(k.ctc) + '</td><td>' +
+						fmt(k.salary * 12) + '</td><td>' + fmt(k.ctc * 12) + '</td><td></td></tr>';
+				});
+			}
 		});
 		return h + '</tbody></table></div>';
 	}
@@ -100,8 +124,38 @@ frappe.pages['hr-budget-dashboard'].on_page_load = function (wrapper) {
 		return h;
 	}
 
+	function movementTable(m) {
+		var h = '<div class="card"><table><thead><tr>' +
+			'<th>Month</th><th>Opening CTC</th><th>Joined</th><th>Added</th>' +
+			'<th>Left</th><th>Removed</th><th>Closing CTC</th></tr></thead><tbody>';
+
+		m.rows.forEach(function (r) {
+			h += '<tr><td>' + r.month + '</td><td>' + fmt(r.opening) + '</td>' +
+				'<td>' + (r.joined ? fmt(r.joined) : '–') + '</td>' +
+				'<td class="pos">' + (r.added ? '+' + fmt(r.added) : '–') + '</td>' +
+				'<td>' + (r.left ? fmt(r.left) : '–') + '</td>' +
+				'<td class="neg">' + (r.removed ? '\u2212' + fmt(r.removed) : '–') + '</td>' +
+				'<td>' + fmt(r.closing) + '</td></tr>';
+		});
+
+		h += '<tr class="grand"><td>NET</td><td></td><td>' + fmt(m.net_joined) + '</td><td>+' +
+			fmt(m.net_added) + '</td><td>' + fmt(m.net_left) + '</td><td>\u2212' +
+			fmt(m.net_removed) + '</td><td>' + fmt(m.closing) + '</td></tr>';
+
+		h += '</tbody></table></div>';
+
+		if (m.undated_leavers) {
+			h += '<p class="note" style="color:#A32D2D;margin-top:8px;">' + m.undated_leavers +
+				' employee(s) marked Left have no relieving date, so they are not in the Left column. ' +
+				'Add the date on their Employee record to include them.</p>';
+		}
+		return h;
+	}
+
 	function render(d) {
 		var a = d.active, p = d.plan, rp = d.ramp;
+		var dsg = d.designations || {};
+		var mv = d.movement;
 		var projected = (a.current_ctc || 0) + (p.total_ctc || 0);
 		var pct = a.current_ctc ? (p.total_ctc / a.current_ctc * 100).toFixed(1) : 0;
 		var grand = a.rows.filter(function (r) { return r.kind === 'grand'; })[0] || { hc: 0 };
@@ -118,7 +172,25 @@ frappe.pages['hr-budget-dashboard'].on_page_load = function (wrapper) {
 		html += '<h2>2 · Budget increase — Jul–Dec 2026</h2><p class="note">Open positions in the Hiring Plan. % = share of current payroll added.</p>' + planTable(p, a.current_salary);
 		html += '<h2>3 · Likely monthly payable — Jul–Dec</h2><p class="note">Current staff flat; open positions phase in by planned month (salary, cumulative).</p>' + rampTable(rp);
 
+		if (mv && mv.rows && mv.rows.length) {
+			html += '<h2>4 · Movement — joiners &amp; leavers</h2>' +
+				'<p class="note">Last 6 months. Who joined, who left, and the effect on monthly CTC.</p>' +
+				movementTable(mv);
+		}
+
 		$body.html(html);
+
+		$body.find('.hclink, .chev').on('click', function () {
+			var unit = $(this).attr('data-unit');
+			var $kids = $body.find('tr.dsg').filter(function () {
+				return $(this).attr('data-parent') === unit;
+			});
+			var showing = $kids.first().is(':visible');
+			$kids.toggle(!showing);
+			$body.find('.chev').filter(function () {
+				return $(this).attr('data-unit') === unit;
+			}).html(showing ? '&#9654;' : '&#9660;');
+		});
 	}
 
 	function kpi(l, v, d) {
