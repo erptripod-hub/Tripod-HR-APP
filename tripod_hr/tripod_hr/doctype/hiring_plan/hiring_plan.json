@@ -11,9 +11,12 @@
   "budget_unit",
   "cb1",
   "department",
+  "section",
   "designation",
   "planned_month",
   "status",
+  "hire_type",
+  "replacing_employee",
   "linked_employee",
   "sb_cost",
   "monthly_salary",
@@ -89,7 +92,7 @@
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "Open\nFilled\nCancelled",
+   "options": "Open\nIn Progress\nFilled\nCancelled",
    "default": "Open",
    "in_list_view": 1,
    "in_standard_filter": 1
@@ -161,6 +164,28 @@
    "fieldname": "notes",
    "fieldtype": "Small Text",
    "label": "Notes"
+  },
+  {
+   "fieldname": "section",
+   "fieldtype": "Data",
+   "label": "Section",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "hire_type",
+   "fieldtype": "Select",
+   "label": "Hire Type",
+   "options": "\nNew\nReplacement",
+   "default": "New",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "replacing_employee",
+   "fieldtype": "Link",
+   "label": "Replacing Employee",
+   "options": "Employee",
+   "depends_on": "eval:doc.hire_type=='Replacement'"
   }
  ],
  "index_web_pages_for_search": 1,
