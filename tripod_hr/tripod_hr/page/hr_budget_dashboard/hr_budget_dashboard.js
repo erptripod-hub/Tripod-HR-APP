@@ -168,7 +168,7 @@ frappe.pages['hr-budget-dashboard'].on_page_load = function (wrapper) {
 			kpi('Projected CTC', fmt(projected), '+' + pct + '%') +
 			'</div>';
 
-		html += '<h2>1 · Active staff</h2><p class="note">Live from Employee master (status = Active).</p>' + activeTable(a);
+		html += '<h2>1 · Active staff</h2><p class="note">Live from Employee master (status = Active). Click a head count to see its designations.</p>' + activeTable(a, dsg);
 		html += '<h2>2 · Budget increase — Jul–Dec 2026</h2><p class="note">Open positions in the Hiring Plan. % = share of current payroll added.</p>' + planTable(p, a.current_salary);
 		html += '<h2>3 · Likely monthly payable — Jul–Dec</h2><p class="note">Current staff flat; open positions phase in by planned month (salary, cumulative).</p>' + rampTable(rp);
 
