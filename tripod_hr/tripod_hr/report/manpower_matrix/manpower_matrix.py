@@ -1,57 +1,98 @@
 # Copyright (c) 2026, Tripod HR
 # Manpower Matrix — Department -> Section (rows) x Location state (columns).
-# Tripod Media only. Mirrors the management pivot (Sheet4). No budget/cost.
+# Company aware: Tripod Media labour is spread across UAE visa locations, while
+# Tripod Global labour all sits in KSA, so each company gets its own column set.
 
 import frappe
 from frappe import _
 
-LOCATIONS = [
-    "DXB",
-    "DXB - Logistics",
-    "DXB Staff on Leave",
-    "KSA (DXB Visa)",
-    "Luxxe (TM Visa)",
-    "Cancel",
-    "Admin - Home/ Security",
-]
+TM_COMPANY = "Tripod Media FZ LLC"
+TG_COMPANY = "TRIPOD GLOBAL SHOPFIT MANUFACTURING COMPANY"
 
-LOC_KEY = {
-    "DXB": "dxb",
-    "DXB - Logistics": "dxb_logistics",
-    "DXB Staff on Leave": "dxb_leave",
-    "KSA (DXB Visa)": "ksa",
-    "Luxxe (TM Visa)": "luxxe",
-    "Cancel": "cancel",
-    "Admin - Home/ Security": "admin_home",
+TM_CONFIG = {
+    "locations": [
+        "DXB",
+        "DXB - Logistics",
+        "DXB Staff on Leave",
+        "KSA (DXB Visa)",
+        "Luxxe (TM Visa)",
+        "Cancel",
+        "Admin - Home/ Security",
+    ],
+    "keys": {
+        "DXB": "dxb",
+        "DXB - Logistics": "dxb_logistics",
+        "DXB Staff on Leave": "dxb_leave",
+        "KSA (DXB Visa)": "ksa",
+        "Luxxe (TM Visa)": "luxxe",
+        "Cancel": "cancel",
+        "Admin - Home/ Security": "admin_home",
+    },
+    "dept_order": {"ADMIN": 1, "Fitout - TM": 2, "Logistics - TM": 3, "Production  - TM": 4},
+    "chart_labels": ["Dubai", "Logistics", "On Leave", "KSA", "Luxxe", "Cancel", "Admin/Home"],
+    "chart_colors": ["#378ADD", "#85B7EB", "#888780", "#1D9E75", "#534AB7", "#B4B2A9", "#888780"],
+    "summary": [
+        ("total", "Total Manpower", "Blue"),
+        ("dxb", "In Dubai (DXB)", "Blue"),
+        ("ksa", "KSA (DXB Visa)", "Green"),
+        ("luxxe", "Luxxe (TM Visa)", "Purple"),
+        ("dxb_leave", "Staff on Leave", "Orange"),
+    ],
 }
 
-DEPT_ORDER = {"ADMIN": 1, "Fitout - TM": 2, "Logistics - TM": 3, "Production  - TM": 4}
+TG_CONFIG = {
+    "locations": [
+        "KSA",
+        "KSA Staff on Leave",
+        "Cancel",
+    ],
+    "keys": {
+        "KSA": "ksa_loc",
+        "KSA Staff on Leave": "ksa_leave",
+        "Cancel": "cancel",
+    },
+    "dept_order": {
+        "Admin - TDMFCL": 1,
+        "Fitout - TDMFCL": 2,
+        "Logistics - TDMFCL": 3,
+        "Production-Team  - TDMFCL": 4,
+    },
+    "chart_labels": ["In KSA", "On Leave", "Cancel"],
+    "chart_colors": ["#1D9E75", "#888780", "#B4B2A9"],
+    "summary": [
+        ("total", "Total Manpower", "Blue"),
+        ("ksa_loc", "In KSA", "Green"),
+        ("ksa_leave", "Staff on Leave", "Orange"),
+    ],
+}
+
+
+def get_config(company):
+    return TG_CONFIG if company == TG_COMPANY else TM_CONFIG
 
 
 def execute(filters=None):
     filters = filters or {}
-    columns = get_columns()
-    data = get_data(filters)
-    chart = get_chart(data)
-    report_summary = get_report_summary(data)
-    return columns, data, None, chart, report_summary
+    company = filters.get("company") or TM_COMPANY
+    cfg = get_config(company)
+
+    data = get_data(company, cfg)
+    return get_columns(cfg), data, None, get_chart(data, cfg), get_report_summary(data, cfg)
 
 
-def get_columns():
+def get_columns(cfg):
     cols = [
-        {"label": _("Department"), "fieldname": "department", "fieldtype": "Data", "width": 150},
-        {"label": _("Section"), "fieldname": "section", "fieldtype": "Data", "width": 170},
+        {"label": _("Department"), "fieldname": "department", "fieldtype": "Data", "width": 190},
+        {"label": _("Section"), "fieldname": "section", "fieldtype": "Data", "width": 180},
     ]
-    for loc in LOCATIONS:
-        cols.append({"label": _(loc), "fieldname": LOC_KEY[loc], "fieldtype": "Int", "width": 115})
+    for loc in cfg["locations"]:
+        cols.append({"label": _(loc), "fieldname": cfg["keys"][loc], "fieldtype": "Int", "width": 130})
     cols.append({"label": _("Unmapped"), "fieldname": "unmapped", "fieldtype": "Int", "width": 100})
     cols.append({"label": _("Total"), "fieldname": "total", "fieldtype": "Int", "width": 90})
     return cols
 
 
-def get_data(filters):
-    company = filters.get("company") or "Tripod Media FZ LLC"
-
+def get_data(company, cfg):
     rows = frappe.db.sql(
         """
         SELECT
@@ -69,21 +110,24 @@ def get_data(filters):
         as_dict=True,
     )
 
+    keys = cfg["keys"]
+    dept_order = cfg["dept_order"]
+
     # dept -> section -> {loc_key: count}
     tree = {}
     for r in rows:
         dept = r["department"]
         sec = r["section"]
-        key = LOC_KEY.get(r["location"]) or "unmapped"
+        key = keys.get(r["location"]) or "unmapped"
         tree.setdefault(dept, {}).setdefault(sec, {})
         tree[dept][sec][key] = tree[dept][sec].get(key, 0) + r["cnt"]
 
-    col_keys = [LOC_KEY[l] for l in LOCATIONS] + ["unmapped"]
+    col_keys = [keys[l] for l in cfg["locations"]] + ["unmapped"]
     data = []
     grand = {k: 0 for k in col_keys}
     grand_total = 0
 
-    for dept in sorted(tree, key=lambda d: DEPT_ORDER.get(d, 9)):
+    for dept in sorted(tree, key=lambda d: dept_order.get(d, 9)):
         dept_tot = {k: 0 for k in col_keys}
         sec_rows = []
         for sec in sorted(tree[dept], key=lambda s: -sum(tree[dept][s].values())):
@@ -97,7 +141,6 @@ def get_data(filters):
             row["total"] = st
             sec_rows.append(row)
 
-        # Department header row (bold, with its totals)
         dept_row = {"department": dept, "section": "", "_dept": 1}
         dt = 0
         for k in col_keys:
@@ -110,7 +153,6 @@ def get_data(filters):
         data.append(dept_row)
         data.extend(sec_rows)
 
-    # Grand total row
     grand_row = {"department": "GRAND TOTAL", "section": "", "total": grand_total, "_grand": 1}
     for k in col_keys:
         grand_row[k] = grand[k]
@@ -119,24 +161,19 @@ def get_data(filters):
     return data
 
 
-def get_chart(data):
+def get_chart(data, cfg):
     grand = next((r for r in data if r.get("_grand")), {})
-    labels = ["Dubai", "Logistics", "On Leave", "KSA", "Luxxe", "Cancel", "Admin/Home"]
-    values = [grand.get(LOC_KEY[l], 0) for l in LOCATIONS]
+    values = [grand.get(cfg["keys"][l], 0) for l in cfg["locations"]]
     return {
         "type": "bar",
-        "data": {"labels": labels, "datasets": [{"name": "Headcount", "values": values}]},
-        "colors": ["#378ADD", "#85B7EB", "#888780", "#1D9E75", "#534AB7", "#B4B2A9", "#888780"],
+        "data": {"labels": cfg["chart_labels"], "datasets": [{"name": "Headcount", "values": values}]},
+        "colors": cfg["chart_colors"],
     }
 
 
-def get_report_summary(data):
+def get_report_summary(data, cfg):
     grand = next((r for r in data if r.get("_grand")), {})
-    dxb = grand.get("dxb", 0)
     return [
-        {"value": grand.get("total", 0), "label": _("Total Manpower"), "datatype": "Int", "indicator": "Blue"},
-        {"value": dxb, "label": _("In Dubai (DXB)"), "datatype": "Int", "indicator": "Blue"},
-        {"value": grand.get("ksa", 0), "label": _("KSA (DXB Visa)"), "datatype": "Int", "indicator": "Green"},
-        {"value": grand.get("luxxe", 0), "label": _("Luxxe (TM Visa)"), "datatype": "Int", "indicator": "Purple"},
-        {"value": grand.get("dxb_leave", 0), "label": _("Staff on Leave"), "datatype": "Int", "indicator": "Orange"},
+        {"value": grand.get(key, 0), "label": _(label), "datatype": "Int", "indicator": colour}
+        for key, label, colour in cfg["summary"]
     ]
