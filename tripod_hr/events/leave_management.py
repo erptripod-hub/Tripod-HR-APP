@@ -51,20 +51,48 @@ def get_annual_leave_type(company, employment_type):
     return None
 
 # Leave Policy Details (days per leave type)
-MALE_POLICY_LEAVES = [
-    {"leave_type": "Sick Leave - Full Pay", "days": 15},
-    {"leave_type": "Sick Leave - Half Pay", "days": 30},
-    {"leave_type": "Paternity Leave", "days": 5},
-    {"leave_type": "Compassionate leave", "days": 5},
-]
+# Sick leave differs by region:
+#   UAE (Federal Decree-Law 33/2021): Full Pay 15, Half Pay 30 (@50%)
+#   KSA (Labor Law Article 117):      Full Pay 30, 75 Percent 60 (@75%)
+# Paternity / Maternity / Compassionate are the same across regions.
 
-FEMALE_POLICY_LEAVES = [
-    {"leave_type": "Sick Leave - Full Pay", "days": 15},
-    {"leave_type": "Sick Leave - Half Pay", "days": 30},
-    {"leave_type": "Maternity - Full Pay", "days": 45},
-    {"leave_type": "Maternity - Half Pay", "days": 15},
-    {"leave_type": "Compassionate leave", "days": 5},
-]
+def get_policy_leaves(gender, company):
+    """Return the list of policy leave types + days, region-aware.
+
+    Region is derived from company via COMPANY_REGION. Unknown companies
+    fall back to UAE numbers (safe default = existing behaviour).
+    """
+    region = COMPANY_REGION.get(company, "UAE")
+
+    # Region-specific sick leave block
+    if region == "KSA":
+        sick = [
+            {"leave_type": "Sick Leave - Full Pay", "days": 30},
+            {"leave_type": "Sick Leave KSA - 75 Percent", "days": 60},
+        ]
+    else:  # UAE (and default)
+        sick = [
+            {"leave_type": "Sick Leave - Full Pay", "days": 15},
+            {"leave_type": "Sick Leave - Half Pay", "days": 30},
+        ]
+
+    # Gender-specific block (same across regions)
+    if gender == "Male":
+        gender_specific = [
+            {"leave_type": "Paternity Leave", "days": 5},
+        ]
+    else:
+        gender_specific = [
+            {"leave_type": "Maternity - Full Pay", "days": 45},
+            {"leave_type": "Maternity - Half Pay", "days": 15},
+        ]
+
+    # Common block
+    common = [
+        {"leave_type": "Compassionate leave", "days": 5},
+    ]
+
+    return sick + gender_specific + common
 
 
 @frappe.whitelist()
@@ -142,11 +170,21 @@ def allocate_leave_policy(emp, year):
     if existing:
         return {"allocated": False, "message": "Leave Policy already assigned"}
     
-    # Get leave types based on gender
-    leave_types = MALE_POLICY_LEAVES if emp.gender == "Male" else FEMALE_POLICY_LEAVES
+    # Get leave types based on gender AND company (region-aware)
+    leave_types = get_policy_leaves(emp.gender, emp.company)
     
     allocated_any = False
     
+    # Policy leaves start from the joining date if the employee joined during
+    # this year; otherwise from Jan 1 (existing employees renewed each year).
+    # to_date is always year-end — these leaves expire yearly (no carry forward).
+    doj = getdate(emp.date_of_joining)
+    if doj.year == year:
+        policy_from_date = str(doj)
+    else:
+        policy_from_date = f"{year}-01-01"
+    policy_to_date = f"{year}-12-31"
+
     for lt in leave_types:
         leave_type = lt["leave_type"]
         days = lt["days"]
@@ -168,8 +206,8 @@ def allocate_leave_policy(emp, year):
             "employee": emp.name,
             "employee_name": emp.employee_name,
             "leave_type": leave_type,
-            "from_date": f"{year}-01-01",
-            "to_date": f"{year}-12-31",
+            "from_date": policy_from_date,
+            "to_date": policy_to_date,
             "new_leaves_allocated": days,
             "total_leaves_allocated": days,
             "carry_forward": 0,
@@ -186,8 +224,8 @@ def allocate_leave_policy(emp, year):
             "doctype": "Leave Policy Assignment",
             "employee": emp.name,
             "leave_policy": policy_name,
-            "effective_from": f"{year}-01-01",
-            "effective_to": f"{year}-12-31",
+            "effective_from": policy_from_date,
+            "effective_to": policy_to_date,
         })
         lpa.insert(ignore_permissions=True)
         lpa.submit()
@@ -263,8 +301,8 @@ def get_allocation_status(employee):
     emp = frappe.get_doc("Employee", employee)
     year = getdate(nowdate()).year
     
-    # Get expected leave types based on gender
-    leave_types = MALE_POLICY_LEAVES if emp.gender == "Male" else FEMALE_POLICY_LEAVES
+    # Get expected leave types based on gender AND company (region-aware)
+    leave_types = get_policy_leaves(emp.gender, emp.company)
     
     # Add annual leave
     annual_leave_type = get_annual_leave_type(emp.company, emp.employment_type)
