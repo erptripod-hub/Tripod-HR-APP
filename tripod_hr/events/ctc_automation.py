@@ -21,6 +21,25 @@ GOSI_SAUDI_RATE = 0.23
 GOSI_OTHER_RATE = 0.02
 
 
+def _latest_ssa_basic_hra(employee):
+    """(sc_basic, sc_hra) from the employee's latest submitted Salary Structure Assignment."""
+    if not employee:
+        return 0.0, 0.0
+    row = frappe.db.sql(
+        """
+        SELECT sc_basic, sc_hra
+        FROM `tabSalary Structure Assignment`
+        WHERE employee = %s AND docstatus = 1
+        ORDER BY from_date DESC, creation DESC
+        LIMIT 1
+        """,
+        employee,
+    )
+    if not row:
+        return 0.0, 0.0
+    return float(row[0][0] or 0), float(row[0][1] or 0)
+
+
 def _compute_gosi(doc):
     """Return the GOSI amount for this employee, or None if not KSA (leave as-is)."""
     if doc.get("company") != KSA_COMPANY:
@@ -29,11 +48,11 @@ def _compute_gosi(doc):
     if (doc.get("country") or "").strip() == "Saudi Arabia":
         return float(doc.get("custom_total_salary") or 0) * GOSI_SAUDI_RATE
 
-    basic = float(doc.get("sc_basic") or 0)
+    basic, hra = _latest_ssa_basic_hra(doc.get("name"))
     if (doc.get("employment_type") or "") == "Labour":
         base = basic
     else:
-        base = basic + float(doc.get("sc_hra") or 0)
+        base = basic + hra
     return base * GOSI_OTHER_RATE
 
 
