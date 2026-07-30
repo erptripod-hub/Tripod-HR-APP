@@ -12,8 +12,37 @@ CTC_COMPONENTS = [
 ]
 
 
+# GOSI (KSA / Tripod Global only), per Saudi labour law:
+#   Saudi national        -> 23% of full salary
+#   Non-Saudi office staff -> 2% of (Basic + Housing/HRA)
+#   Non-Saudi labour       -> 2% of Basic only
+KSA_COMPANY = "TRIPOD GLOBAL SHOPFIT MANUFACTURING COMPANY"
+GOSI_SAUDI_RATE = 0.23
+GOSI_OTHER_RATE = 0.02
+
+
+def _compute_gosi(doc):
+    """Return the GOSI amount for this employee, or None if not KSA (leave as-is)."""
+    if doc.get("company") != KSA_COMPANY:
+        return None
+
+    if (doc.get("country") or "").strip() == "Saudi Arabia":
+        return float(doc.get("custom_total_salary") or 0) * GOSI_SAUDI_RATE
+
+    basic = float(doc.get("sc_basic") or 0)
+    if (doc.get("employment_type") or "") == "Labour":
+        base = basic
+    else:
+        base = basic + float(doc.get("sc_hra") or 0)
+    return base * GOSI_OTHER_RATE
+
+
 def _compute(doc):
-    """Set custom_monthly_ctc / custom_annual_ctc from salary + components."""
+    """Recompute GOSI (KSA), then custom_monthly_ctc / custom_annual_ctc."""
+    gosi = _compute_gosi(doc)
+    if gosi is not None:
+        doc.custom_gosi = round(gosi, 2)
+
     total = float(doc.get("custom_total_salary") or 0)
     for f in CTC_COMPONENTS:
         total += float(doc.get(f) or 0)

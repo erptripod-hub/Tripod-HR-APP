@@ -9,7 +9,8 @@ from frappe import _
 REGION_ORDER = {"UAE": 1, "KSA": 2}
 UNIT_ORDER = {
     "Fit Out UAE": 1, "Dubai Production": 2, "Dubai Office": 3,
-    "KSA Office": 4, "KSA National": 5, "KSA Labour": 6, "KSA Fit Out": 7,
+    "KSA Office": 4, "KSA National": 5, "KSA Production": 6, "KSA Fit Out": 7,
+    "Logistics": 8, "Admin": 9,
 }
 
 
@@ -28,8 +29,11 @@ def get_columns():
         {"label": _("Budget Unit"), "fieldname": "budget_unit", "fieldtype": "Data", "width": 150},
         {"label": _("Section"), "fieldname": "section", "fieldtype": "Data", "width": 150},
         {"label": _("HC"), "fieldname": "hc", "fieldtype": "Int", "width": 60},
-        {"label": _("Actual Pay"), "fieldname": "pay", "fieldtype": "Float", "width": 120, "precision": 0},
-        {"label": _("Allowances"), "fieldname": "allowances", "fieldtype": "Float", "width": 120, "precision": 0},
+        {"label": _("Actual Pay"), "fieldname": "pay", "fieldtype": "Float", "width": 110, "precision": 0},
+        {"label": _("Accommodation"), "fieldname": "accommodation", "fieldtype": "Float", "width": 110, "precision": 0},
+        {"label": _("Iqama / Visa"), "fieldname": "iqama_visa", "fieldtype": "Float", "width": 100, "precision": 0},
+        {"label": _("Medical"), "fieldname": "medical", "fieldtype": "Float", "width": 90, "precision": 0},
+        {"label": _("Ticket"), "fieldname": "ticket", "fieldtype": "Float", "width": 90, "precision": 0},
         {"label": _("GOSI"), "fieldname": "gosi", "fieldtype": "Float", "width": 90, "precision": 0},
         {"label": _("Monthly CTC"), "fieldname": "monthly_ctc", "fieldtype": "Float", "width": 130, "precision": 0},
         {"label": _("Annual CTC"), "fieldname": "annual_ctc", "fieldtype": "Float", "width": 140, "precision": 0},
@@ -55,8 +59,10 @@ def get_data(filters):
             COALESCE(NULLIF(e.custom_sub_department,''), 'Unassigned')  AS section,
             COUNT(e.name)                                AS hc,
             SUM(COALESCE(e.custom_total_salary,0))       AS pay,
-            SUM(COALESCE(e.custom_accommodation,0)+COALESCE(e.custom_visa,0)+COALESCE(e.custom_iqama,0)
-                +COALESCE(e.custom_medical_insurance,0)+COALESCE(e.custom_ticket_allowance,0))  AS allowances,
+            SUM(COALESCE(e.custom_accommodation,0))                             AS accommodation,
+            SUM(COALESCE(e.custom_visa,0)+COALESCE(e.custom_iqama,0))            AS iqama_visa,
+            SUM(COALESCE(e.custom_medical_insurance,0))                          AS medical,
+            SUM(COALESCE(e.custom_ticket_allowance,0))                           AS ticket,
             SUM(COALESCE(e.custom_gosi,0))               AS gosi,
             SUM(COALESCE(e.custom_monthly_ctc,0))        AS monthly_ctc,
             SUM(COALESCE(e.custom_annual_ctc,0))         AS annual_ctc
@@ -72,7 +78,7 @@ def get_data(filters):
         tree.setdefault(r["region"], {}).setdefault(r["budget_unit"], []).append(r)
 
     data = []
-    MEASURES = ["hc", "pay", "allowances", "gosi", "monthly_ctc", "annual_ctc"]
+    MEASURES = ["hc", "pay", "accommodation", "iqama_visa", "medical", "ticket", "gosi", "monthly_ctc", "annual_ctc"]
     grand = {m: 0 for m in MEASURES}
 
     for region in sorted(tree, key=lambda x: REGION_ORDER.get(x, 9)):

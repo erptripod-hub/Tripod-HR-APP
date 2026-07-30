@@ -17,7 +17,7 @@ frappe.query_reports["Hiring Plan Summary"] = {
             "fieldname": "budget_unit",
             "label": __("Budget Unit"),
             "fieldtype": "Select",
-            "options": "\nFit Out UAE\nDubai Production\nDubai Office\nKSA Office\nKSA National\nKSA Labour\nKSA Fit Out"
+            "options": "\nFit Out UAE\nDubai Production\nDubai Office\nKSA Office\nKSA National\nKSA Production\nKSA Fit Out\nLogistics\nAdmin"
         },
         {
             "fieldname": "section",

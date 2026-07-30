@@ -35,19 +35,13 @@ ALLOWED_NON_BASIC = [
 def get_deduction_amount(total_salary):
     """
     Slab logic:
-    - 8000 and below     : No deduction
-    - 8001 to 9999       : Deduct to make net = 8000
-    - 10000 to 10999     : 20% deduction
-    - 11000 and above    : 25% deduction
+    - 8000 and below : No deduction
+    - Above 8000     : 15% of total salary
     """
     if total_salary <= 8000:
         return 0
-    elif total_salary < 10000:
-        return total_salary - 8000
-    elif total_salary < 11000:
-        return total_salary * 0.20
     else:
-        return total_salary * 0.25
+        return total_salary * 0.15
 
 
 class CustomSalarySlip(SalarySlip):

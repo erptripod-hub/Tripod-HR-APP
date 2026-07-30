@@ -3,11 +3,13 @@ import frappe
 REGION_ORDER = {"UAE": 1, "KSA": 2, "": 9}
 UNIT_ORDER = {
     "Fit Out UAE": 1, "Dubai Production": 2, "Dubai Office": 3,
-    "KSA Office": 4, "KSA National": 5, "KSA Labour": 6, "KSA Fit Out": 7,
+    "KSA Office": 4, "KSA National": 5, "KSA Production": 6, "KSA Fit Out": 7,
+    "Logistics": 8, "Admin": 9,
 }
 UNIT_REGION = {
     "Fit Out UAE": "UAE", "Dubai Production": "UAE", "Dubai Office": "UAE",
-    "KSA Office": "KSA", "KSA National": "KSA", "KSA Labour": "KSA", "KSA Fit Out": "KSA",
+    "KSA Office": "KSA", "KSA National": "KSA", "KSA Production": "KSA", "KSA Fit Out": "KSA",
+    "Logistics": "KSA", "Admin": "KSA",
 }
 OWNERS = ["TM-EMP-0021", "TM-EMP-0022"]        # excluded from budget entirely
 CEO = "TGK-EMP-0284"                            # cost split across two offices
