@@ -19,6 +19,8 @@ CTC_COMPONENTS = [
 KSA_COMPANY = "TRIPOD GLOBAL SHOPFIT MANUFACTURING COMPANY"
 GOSI_SAUDI_RATE = 0.23
 GOSI_OTHER_RATE = 0.02
+GOSI_EXCLUDE_BRANCH = "Tap Gulf"      # outsourced staff, not on our iqama
+GOSI_EXCLUDE_EMPLOYEES = ["TGK-EMP-0288"]  # James: KSA employee on UAE visa, no GOSI
 
 
 def _latest_ssa_basic_hra(employee):
@@ -44,6 +46,12 @@ def _compute_gosi(doc):
     """Return the GOSI amount for this employee, or None if not KSA (leave as-is)."""
     if doc.get("company") != KSA_COMPANY:
         return None
+
+    # Outsourced (Tap Gulf branch) and specific UAE-visa employees carry no GOSI
+    if (doc.get("branch") or "") == GOSI_EXCLUDE_BRANCH:
+        return 0.0
+    if doc.get("name") in GOSI_EXCLUDE_EMPLOYEES:
+        return 0.0
 
     if (doc.get("country") or "").strip() == "Saudi Arabia":
         return float(doc.get("custom_total_salary") or 0) * GOSI_SAUDI_RATE
