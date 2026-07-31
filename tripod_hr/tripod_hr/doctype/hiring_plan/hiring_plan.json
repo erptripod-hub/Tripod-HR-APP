@@ -59,7 +59,7 @@
    "fieldname": "budget_unit",
    "fieldtype": "Select",
    "label": "Budget Unit",
-   "options": "\nFit Out UAE\nDubai Production\nDubai Office\nKSA Office\nKSA National\nKSA Production\nKSA Fit Out\nLogistics\nAdmin",
+   "options": "\nFit Out UAE\nDubai Production\nDubai Office\nKSA Office\nKSA National\nKSA Production\nKSA Fit Out\nLogistics\nAdmin\nTap Gulf",
    "in_list_view": 1,
    "in_standard_filter": 1
   },

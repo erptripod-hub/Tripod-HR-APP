@@ -4,12 +4,12 @@ REGION_ORDER = {"UAE": 1, "KSA": 2, "": 9}
 UNIT_ORDER = {
     "Fit Out UAE": 1, "Dubai Production": 2, "Dubai Office": 3,
     "KSA Office": 4, "KSA National": 5, "KSA Production": 6, "KSA Fit Out": 7,
-    "Logistics": 8, "Admin": 9,
+    "Logistics": 8, "Admin": 9, "Tap Gulf": 10,
 }
 UNIT_REGION = {
     "Fit Out UAE": "UAE", "Dubai Production": "UAE", "Dubai Office": "UAE",
     "KSA Office": "KSA", "KSA National": "KSA", "KSA Production": "KSA", "KSA Fit Out": "KSA",
-    "Logistics": "KSA", "Admin": "KSA",
+    "Logistics": "KSA", "Admin": "KSA", "Tap Gulf": "KSA",
 }
 OWNERS = ["TM-EMP-0021", "TM-EMP-0022"]        # excluded from budget entirely
 CEO = "TGK-EMP-0284"                            # cost split across two offices
