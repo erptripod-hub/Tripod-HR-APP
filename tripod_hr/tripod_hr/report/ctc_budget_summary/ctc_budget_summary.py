@@ -10,7 +10,12 @@ REGION_ORDER = {"UAE": 1, "KSA": 2}
 UNIT_ORDER = {
     "Fit Out UAE": 1, "Dubai Production": 2, "Dubai Office": 3,
     "KSA Office": 4, "KSA National": 5, "KSA Production": 6, "KSA Fit Out": 7,
-    "Logistics": 8, "Admin": 9,
+    "Logistics": 8, "Admin": 9, "Tap Gulf": 10,
+}
+UNIT_REGION = {
+    "Fit Out UAE": "UAE", "Dubai Production": "UAE", "Dubai Office": "UAE",
+    "KSA Office": "KSA", "KSA National": "KSA", "KSA Production": "KSA", "KSA Fit Out": "KSA",
+    "Logistics": "KSA", "Admin": "KSA", "Tap Gulf": "KSA",
 }
 
 
@@ -35,6 +40,7 @@ def get_columns():
         {"label": _("Medical"), "fieldname": "medical", "fieldtype": "Float", "width": 90, "precision": 0},
         {"label": _("Ticket"), "fieldname": "ticket", "fieldtype": "Float", "width": 90, "precision": 0},
         {"label": _("GOSI"), "fieldname": "gosi", "fieldtype": "Float", "width": 90, "precision": 0},
+        {"label": _("Other Cost"), "fieldname": "other_cost", "fieldtype": "Float", "width": 100, "precision": 0},
         {"label": _("Monthly CTC"), "fieldname": "monthly_ctc", "fieldtype": "Float", "width": 130, "precision": 0},
         {"label": _("Annual CTC"), "fieldname": "annual_ctc", "fieldtype": "Float", "width": 140, "precision": 0},
     ]
@@ -44,8 +50,12 @@ def get_data(filters):
     conditions = ["e.status = 'Active'", "e.custom_budget_unit IS NOT NULL", "e.custom_budget_unit != ''"]
     values = {}
     if filters.get("region"):
-        conditions.append("e.custom_region = %(region)s")
-        values["region"] = filters["region"]
+        region_units = [u for u, r in UNIT_REGION.items() if r == filters["region"]]
+        if region_units:
+            placeholders = ", ".join("%(ru{0})s".format(i) for i in range(len(region_units)))
+            conditions.append("e.custom_budget_unit IN ({0})".format(placeholders))
+            for i, u in enumerate(region_units):
+                values["ru{0}".format(i)] = u
     if filters.get("budget_unit"):
         conditions.append("e.custom_budget_unit = %(budget_unit)s")
         values["budget_unit"] = filters["budget_unit"]
@@ -64,6 +74,7 @@ def get_data(filters):
             SUM(COALESCE(e.custom_medical_insurance,0))                          AS medical,
             SUM(COALESCE(e.custom_ticket_allowance,0))                           AS ticket,
             SUM(COALESCE(e.custom_gosi,0))               AS gosi,
+            SUM(COALESCE(e.custom_mol_fee,0)+COALESCE(e.custom_royalty_fee,0))  AS other_cost,
             SUM(COALESCE(e.custom_monthly_ctc,0))        AS monthly_ctc,
             SUM(COALESCE(e.custom_annual_ctc,0))         AS annual_ctc
         FROM `tabEmployee` e
@@ -75,10 +86,11 @@ def get_data(filters):
 
     tree = {}
     for r in rows:
-        tree.setdefault(r["region"], {}).setdefault(r["budget_unit"], []).append(r)
+        reg = UNIT_REGION.get(r["budget_unit"], r.get("region") or "(none)")
+        tree.setdefault(reg, {}).setdefault(r["budget_unit"], []).append(r)
 
     data = []
-    MEASURES = ["hc", "pay", "accommodation", "iqama_visa", "medical", "ticket", "gosi", "monthly_ctc", "annual_ctc"]
+    MEASURES = ["hc", "pay", "accommodation", "iqama_visa", "medical", "ticket", "gosi", "other_cost", "monthly_ctc", "annual_ctc"]
     grand = {m: 0 for m in MEASURES}
 
     for region in sorted(tree, key=lambda x: REGION_ORDER.get(x, 9)):

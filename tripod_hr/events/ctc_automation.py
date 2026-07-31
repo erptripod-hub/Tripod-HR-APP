@@ -9,6 +9,8 @@ CTC_COMPONENTS = [
     "custom_medical_insurance",
     "custom_ticket_allowance",
     "custom_gosi",
+    "custom_mol_fee",
+    "custom_royalty_fee",
 ]
 
 
