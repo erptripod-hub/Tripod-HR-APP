@@ -429,54 +429,28 @@ def get_employee_details(employee):
 	data["_salary_source"] = salary_source or "Not found - please enter manually"
 
 	# Get leave balance - ONLY Annual Leave (encashable for EOS)
+	# Source: tabLeave Ledger Entry - the same table ERPNext's Leave Application
+	# dashboard reads from. This guarantees the balance shown in EOS matches
+	# the "Available Leaves" shown on the Leave Application form.
 	leave_balance = 0
 	leaves_accrued = 0
 	leaves_utilized = 0
 	try:
-		# Get Annual Leave type for UAE (encashable leave types)
-		annual_leave_types = frappe.db.sql("""
-			SELECT name FROM `tabLeave Type`
-			WHERE (name LIKE '%Annual%' OR is_earned_leave = 1)
-			AND allow_encashment = 1
-		""", as_list=True)
+		# Sum from Leave Ledger Entry, filtered to Annual leave types only
+		# Positive entries = allocations (accrued), Negative entries = leaves taken
+		ledger = frappe.db.sql("""
+			SELECT
+				COALESCE(SUM(CASE WHEN leaves > 0 THEN leaves ELSE 0 END), 0) AS allocated,
+				COALESCE(SUM(CASE WHEN leaves < 0 THEN -leaves ELSE 0 END), 0) AS used
+			FROM `tabLeave Ledger Entry`
+			WHERE employee = %s
+			AND leave_type LIKE '%%Annual%%'
+			AND docstatus = 1
+		""", (employee,), as_dict=True)
 		
-		if not annual_leave_types:
-			# Fallback - get any leave type with "Annual" in name
-			annual_leave_types = frappe.db.sql("""
-				SELECT name FROM `tabLeave Type`
-				WHERE name LIKE '%Annual%'
-			""", as_list=True)
-		
-		annual_leave_names = [lt[0] for lt in annual_leave_types] if annual_leave_types else []
-		
-		if annual_leave_names:
-			# Get total allocated leaves from all allocations
-			placeholders = ', '.join(['%s'] * len(annual_leave_names))
-			
-			allocated = frappe.db.sql("""
-				SELECT COALESCE(SUM(total_leaves_allocated), 0)
-				FROM `tabLeave Allocation`
-				WHERE employee = %s
-				AND docstatus = 1
-				AND leave_type IN ({})
-			""".format(placeholders), [employee] + annual_leave_names)
-			
-			if allocated and allocated[0][0]:
-				leaves_accrued = flt(allocated[0][0])
-			
-			# Get total utilized leaves
-			utilized = frappe.db.sql("""
-				SELECT COALESCE(SUM(total_leave_days), 0)
-				FROM `tabLeave Application`
-				WHERE employee = %s
-				AND docstatus = 1
-				AND status = 'Approved'
-				AND leave_type IN ({})
-			""".format(placeholders), [employee] + annual_leave_names)
-			
-			if utilized and utilized[0][0]:
-				leaves_utilized = flt(utilized[0][0])
-			
+		if ledger and ledger[0]:
+			leaves_accrued = flt(ledger[0].allocated)
+			leaves_utilized = flt(ledger[0].used)
 			leave_balance = leaves_accrued - leaves_utilized
 			if leave_balance < 0:
 				leave_balance = 0
