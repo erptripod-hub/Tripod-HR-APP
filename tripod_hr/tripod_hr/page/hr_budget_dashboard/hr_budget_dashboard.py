@@ -302,7 +302,8 @@ def _movement(company, current_ctc):
 
     joiners = frappe.db.sql(
         f"""
-        SELECT DATE_FORMAT(date_of_joining, '%%Y-%%m') AS m,
+        SELECT DATE_FORMAT(date_of_joining, '%%Y-%%m')      AS m,
+               CASE WHEN employment_type = 'Labour' THEN 'Labour' ELSE 'Office Staff' END AS etype,
                COUNT(*)                             AS hc,
                SUM(COALESCE(custom_monthly_ctc, 0)) AS ctc
         FROM `tabEmployee`
@@ -310,14 +311,15 @@ def _movement(company, current_ctc):
           AND date_of_joining >= %(start)s
           AND name NOT IN %(owners)s
           {ccond}
-        GROUP BY m
+        GROUP BY m, etype
         """,
         vals, as_dict=True,
     )
 
     leavers = frappe.db.sql(
         f"""
-        SELECT DATE_FORMAT(relieving_date, '%%Y-%%m') AS m,
+        SELECT DATE_FORMAT(relieving_date, '%%Y-%%m')       AS m,
+               CASE WHEN employment_type = 'Labour' THEN 'Labour' ELSE 'Office Staff' END AS etype,
                COUNT(*)                             AS hc,
                SUM(COALESCE(custom_monthly_ctc, 0)) AS ctc
         FROM `tabEmployee`
@@ -325,13 +327,25 @@ def _movement(company, current_ctc):
           AND relieving_date >= %(start)s
           AND name NOT IN %(owners)s
           {ccond}
-        GROUP BY m
+        GROUP BY m, etype
         """,
         vals, as_dict=True,
     )
 
-    jmap = {r["m"]: r for r in joiners}
-    lmap = {r["m"]: r for r in leavers}
+    def _agg(rows):
+        out = {}
+        for r in rows:
+            e = out.setdefault(r["m"], {"hc": 0, "ctc": 0.0, "office": 0, "labour": 0})
+            e["hc"] += int(r["hc"] or 0)
+            e["ctc"] += float(r["ctc"] or 0)
+            if r["etype"] == "Labour":
+                e["labour"] += int(r["hc"] or 0)
+            else:
+                e["office"] += int(r["hc"] or 0)
+        return out
+
+    jmap = _agg(joiners)
+    lmap = _agg(leavers)
 
     keys = ["{0}-{1:02d}".format(y, m) for y, m in months]
     labels = [MONTH_NAMES[m - 1] for _, m in months]
@@ -354,8 +368,12 @@ def _movement(company, current_ctc):
             "key": key,
             "opening": round(running),
             "joined": int(j.get("hc") or 0),
+            "joined_office": int(j.get("office") or 0),
+            "joined_labour": int(j.get("labour") or 0),
             "added": round(added),
             "left": int(l.get("hc") or 0),
+            "left_office": int(l.get("office") or 0),
+            "left_labour": int(l.get("labour") or 0),
             "removed": round(removed),
             "closing": round(closing),
         })

@@ -43,6 +43,8 @@ frappe.pages['hr-budget-dashboard'].on_page_load = function (wrapper) {
 		'.hbd tr.dsg td{background:#FBFCFE;color:#3A4A63;font-size:12px;padding:6px 12px;border-bottom:1px solid #F5F4EF}' +
 		'.hbd tr.dsg td:first-child{padding-left:30px}' +
 		'.hbd .hclink{color:#185FA5;border-bottom:1px solid #185FA5;cursor:pointer}' +
+		'.hbd .mvlink{color:#185FA5;border-bottom:1px solid #185FA5;cursor:pointer}' +
+		'.hbd tr.mvsub td{background:#FBFCFE;font-size:11.5px;padding:5px 12px;border-bottom:1px solid #F5F4EF}' +
 		'.hbd .chev{color:#9AA3B0;font-size:10px;margin-right:6px;cursor:pointer}' +
 		'.hbd td.pos{color:#0F6E56}.hbd td.neg{color:#A32D2D}' +
 		'.hbd .loading{padding:40px;text-align:center;color:#6B7280}'
@@ -129,13 +131,36 @@ frappe.pages['hr-budget-dashboard'].on_page_load = function (wrapper) {
 			'<th>Month</th><th>Opening CTC</th><th>Joined</th><th>Added</th>' +
 			'<th>Left</th><th>Removed</th><th>Closing CTC</th></tr></thead><tbody>';
 
-		m.rows.forEach(function (r) {
+		m.rows.forEach(function (r, i) {
+			var jCell = r.joined
+				? '<span class="mvlink" data-row="' + i + '" data-kind="j">' + fmt(r.joined) + '</span>'
+				: '–';
+			var lCell = r.left
+				? '<span class="mvlink" data-row="' + i + '" data-kind="l">' + fmt(r.left) + '</span>'
+				: '–';
 			h += '<tr><td>' + r.month + '</td><td>' + fmt(r.opening) + '</td>' +
-				'<td>' + (r.joined ? fmt(r.joined) : '–') + '</td>' +
+				'<td>' + jCell + '</td>' +
 				'<td class="pos">' + (r.added ? '+' + fmt(r.added) : '–') + '</td>' +
-				'<td>' + (r.left ? fmt(r.left) : '–') + '</td>' +
+				'<td>' + lCell + '</td>' +
 				'<td class="neg">' + (r.removed ? '\u2212' + fmt(r.removed) : '–') + '</td>' +
 				'<td>' + fmt(r.closing) + '</td></tr>';
+
+			// hidden breakdown rows for joined
+			if (r.joined) {
+				h += '<tr class="mvsub" data-parent="' + i + '-j" style="display:none;">' +
+					'<td></td><td style="text-align:right;color:#3A4A63;">Office Staff</td>' +
+					'<td>' + fmt(r.joined_office) + '</td><td colspan="4"></td></tr>';
+				h += '<tr class="mvsub" data-parent="' + i + '-j" style="display:none;">' +
+					'<td></td><td style="text-align:right;color:#3A4A63;">Labour</td>' +
+					'<td>' + fmt(r.joined_labour) + '</td><td colspan="4"></td></tr>';
+			}
+			// hidden breakdown rows for left
+			if (r.left) {
+				h += '<tr class="mvsub" data-parent="' + i + '-l" style="display:none;">' +
+					'<td></td><td colspan="3"></td><td style="text-align:left;color:#3A4A63;">Office Staff ' + fmt(r.left_office) + '</td><td colspan="2"></td></tr>';
+				h += '<tr class="mvsub" data-parent="' + i + '-l" style="display:none;">' +
+					'<td></td><td colspan="3"></td><td style="text-align:left;color:#3A4A63;">Labour ' + fmt(r.left_labour) + '</td><td colspan="2"></td></tr>';
+			}
 		});
 
 		h += '<tr class="grand"><td>NET</td><td></td><td>' + fmt(m.net_joined) + '</td><td>+' +
@@ -169,8 +194,9 @@ frappe.pages['hr-budget-dashboard'].on_page_load = function (wrapper) {
 			'</div>';
 
 		html += '<h2>1 · Active staff</h2><p class="note">Live from Employee master (status = Active). Click a head count to see its designations.</p>' + activeTable(a, dsg);
-		html += '<h2>2 · Budget increase — Jul–Dec 2026</h2><p class="note">Open positions in the Hiring Plan. % = share of current payroll added.</p>' + planTable(p, a.current_salary);
-		html += '<h2>3 · Likely monthly payable — Jul–Dec</h2><p class="note">Current staff flat; open positions phase in by planned month (salary, cumulative).</p>' + rampTable(rp);
+		// Sections 2 & 3 hidden for now (kept in code, can be restored):
+		// html += '<h2>2 · Budget increase — Jul–Dec 2026</h2><p class="note">Open positions in the Hiring Plan. % = share of current payroll added.</p>' + planTable(p, a.current_salary);
+		// html += '<h2>3 · Likely monthly payable — Jul–Dec</h2><p class="note">Current staff flat; open positions phase in by planned month (salary, cumulative).</p>' + rampTable(rp);
 
 		if (mv && mv.rows && mv.rows.length) {
 			html += '<h2>4 · Movement — joiners &amp; leavers</h2>' +
@@ -179,6 +205,15 @@ frappe.pages['hr-budget-dashboard'].on_page_load = function (wrapper) {
 		}
 
 		$body.html(html);
+
+		$body.find('.mvlink').on('click', function () {
+			var key = $(this).attr('data-row') + '-' + $(this).attr('data-kind');
+			var $subs = $body.find('tr.mvsub').filter(function () {
+				return $(this).attr('data-parent') === key;
+			});
+			var showing = $subs.first().is(':visible');
+			$subs.toggle(!showing);
+		});
 
 		$body.find('.hclink, .chev').on('click', function () {
 			var unit = $(this).attr('data-unit');
