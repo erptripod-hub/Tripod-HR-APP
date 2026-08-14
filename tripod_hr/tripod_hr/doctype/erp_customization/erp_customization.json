@@ -1,0 +1,246 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-08-14 08:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "customization_name",
+  "registration_status",
+  "column_break_head",
+  "module",
+  "app_name",
+  "artefact_type",
+  "site_name",
+  "approval_section",
+  "requested_by",
+  "requested_on",
+  "column_break_appr",
+  "approved_by",
+  "approved_on",
+  "approval_reference",
+  "detail_section",
+  "purpose",
+  "artefact_section",
+  "artefacts",
+  "activity_section",
+  "change_count",
+  "last_changed_on",
+  "column_break_act",
+  "last_changed_by",
+  "last_change_source",
+  "system_section",
+  "source_key",
+  "auto_created",
+  "column_break_sys",
+  "discovered_on",
+  "is_active"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "CUST-.#####"
+  },
+  {
+   "fieldname": "customization_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Customization Name",
+   "reqd": 1
+  },
+  {
+   "default": "Needs Names",
+   "fieldname": "registration_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Registration Status",
+   "options": "Needs Names\nRegistered"
+  },
+  {
+   "fieldname": "column_break_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "module",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Module"
+  },
+  {
+   "fieldname": "app_name",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "App"
+  },
+  {
+   "fieldname": "artefact_type",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Primary Artefact Type",
+   "options": "DocType\nServer Script\nClient Script\nPrint Format\nCustom Field\nProperty Setter\nReport\nPage\nWorkflow\nDashboard Chart\nNotification\nWeb Form\nOther"
+  },
+  {
+   "fieldname": "site_name",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Site"
+  },
+  {
+   "fieldname": "approval_section",
+   "fieldtype": "Section Break",
+   "label": "Approval"
+  },
+  {
+   "fieldname": "requested_by",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Requested By",
+   "options": "User"
+  },
+  {
+   "fieldname": "requested_on",
+   "fieldtype": "Date",
+   "label": "Requested On"
+  },
+  {
+   "fieldname": "column_break_appr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "approved_by",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Approved By",
+   "options": "User"
+  },
+  {
+   "fieldname": "approved_on",
+   "fieldtype": "Date",
+   "label": "Approved On"
+  },
+  {
+   "fieldname": "approval_reference",
+   "fieldtype": "Small Text",
+   "label": "Approval Reference"
+  },
+  {
+   "fieldname": "detail_section",
+   "fieldtype": "Section Break",
+   "label": "Detail"
+  },
+  {
+   "fieldname": "purpose",
+   "fieldtype": "Small Text",
+   "label": "Purpose"
+  },
+  {
+   "fieldname": "artefact_section",
+   "fieldtype": "Section Break",
+   "label": "Linked Artefacts"
+  },
+  {
+   "fieldname": "artefacts",
+   "fieldtype": "Table",
+   "label": "Artefacts",
+   "options": "ERP Customization Artefact"
+  },
+  {
+   "fieldname": "activity_section",
+   "fieldtype": "Section Break",
+   "label": "Activity"
+  },
+  {
+   "default": "0",
+   "fieldname": "change_count",
+   "fieldtype": "Int",
+   "label": "Change Count"
+  },
+  {
+   "fieldname": "last_changed_on",
+   "fieldtype": "Datetime",
+   "label": "Last Changed On"
+  },
+  {
+   "fieldname": "column_break_act",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_changed_by",
+   "fieldtype": "Data",
+   "label": "Last Changed By"
+  },
+  {
+   "fieldname": "last_change_source",
+   "fieldtype": "Select",
+   "label": "Last Change Source",
+   "options": "\nSite\nGit\nMigration\nDiscovery"
+  },
+  {
+   "fieldname": "system_section",
+   "fieldtype": "Section Break",
+   "label": "System"
+  },
+  {
+   "description": "Stable identity key used to match site artefacts to this record.",
+   "fieldname": "source_key",
+   "fieldtype": "Data",
+   "label": "Source Key",
+   "unique": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "auto_created",
+   "fieldtype": "Check",
+   "label": "Auto Created"
+  },
+  {
+   "fieldname": "column_break_sys",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "discovered_on",
+   "fieldtype": "Datetime",
+   "label": "Discovered On"
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Active on Site"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-14 08:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Tripod HR",
+ "name": "ERP Customization",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "customization_name,module,app_name",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "customization_name",
+ "track_changes": 1
+}

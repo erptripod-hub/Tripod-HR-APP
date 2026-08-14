@@ -1,0 +1,150 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-08-14 08:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "customization",
+  "change_source",
+  "column_break_head",
+  "changed_by",
+  "change_time",
+  "site_name",
+  "detail_section",
+  "artefact_type",
+  "artefact_name",
+  "column_break_det",
+  "reference",
+  "target_doctype",
+  "body_section",
+  "change_detail",
+  "old_value",
+  "new_value"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "CHG-.YYYY.-.#####"
+  },
+  {
+   "fieldname": "customization",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customization",
+   "options": "ERP Customization"
+  },
+  {
+   "default": "Site",
+   "fieldname": "change_source",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Source",
+   "options": "Site\nGit\nMigration\nDiscovery"
+  },
+  {
+   "fieldname": "column_break_head",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "changed_by",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Changed By"
+  },
+  {
+   "fieldname": "change_time",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Change Time"
+  },
+  {
+   "fieldname": "site_name",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Site"
+  },
+  {
+   "fieldname": "detail_section",
+   "fieldtype": "Section Break",
+   "label": "Artefact"
+  },
+  {
+   "fieldname": "artefact_type",
+   "fieldtype": "Data",
+   "label": "Artefact Type"
+  },
+  {
+   "fieldname": "artefact_name",
+   "fieldtype": "Data",
+   "label": "Artefact Name"
+  },
+  {
+   "fieldname": "column_break_det",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Commit hash for Git changes, Version name for site edits.",
+   "fieldname": "reference",
+   "fieldtype": "Data",
+   "label": "Reference"
+  },
+  {
+   "fieldname": "target_doctype",
+   "fieldtype": "Data",
+   "label": "Target DocType"
+  },
+  {
+   "fieldname": "body_section",
+   "fieldtype": "Section Break",
+   "label": "What Changed"
+  },
+  {
+   "fieldname": "change_detail",
+   "fieldtype": "Small Text",
+   "label": "Change Detail"
+  },
+  {
+   "fieldname": "old_value",
+   "fieldtype": "Code",
+   "label": "Old Value"
+  },
+  {
+   "fieldname": "new_value",
+   "fieldtype": "Code",
+   "label": "New Value"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-14 08:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Tripod HR",
+ "name": "ERP Change Log",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "change_time",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "artefact_name"
+}
