@@ -70,10 +70,15 @@ doctype_js = {
 
 # After Migrate — install CTC custom fields on Employee + SSA
 # -----------------------------------------------------------
+before_migrate = [
+    "tripod_hr.registry.migration.take_snapshot"
+]
+
 after_migrate = [
     "tripod_hr.tripod_hr.ctc_management.install_ctc_fields.install",
     "tripod_hr.tripod_hr.payroll_filter.install_employment_type_field.install",
-    "tripod_hr.tripod_hr.ctc_management.install_budget_dashboard.after_migrate"
+    "tripod_hr.tripod_hr.ctc_management.install_budget_dashboard.after_migrate",
+    "tripod_hr.registry.migration.diff_after_migrate"
 ]
 
 # Uninstallation
@@ -122,6 +127,31 @@ doc_events = {
 		"on_cancel": "tripod_hr.events.ctc_automation.ssa_on_cancel"
 	}
 }
+
+# ERP Customization Register — site-side capture
+# ----------------------------------------------
+# Every save of a tracked artefact appends to the change log; the first insert
+# also creates the register record. Handlers never block the user's save.
+_REGISTRY_TRACKED = (
+	"Custom Field",
+	"Property Setter",
+	"Server Script",
+	"Client Script",
+	"Print Format",
+	"Workflow",
+	"Notification",
+	"Dashboard Chart",
+	"Web Form",
+	"DocType",
+	"Report",
+	"Page",
+)
+
+for _dt in _REGISTRY_TRACKED:
+	doc_events.setdefault(_dt, {})
+	doc_events[_dt]["after_insert"] = "tripod_hr.registry.tracker.on_artefact_insert"
+	doc_events[_dt]["on_update"] = "tripod_hr.registry.tracker.on_artefact_update"
+	doc_events[_dt]["on_trash"] = "tripod_hr.registry.tracker.on_artefact_trash"
 
 # doc_events = {
 #	"*": {
@@ -213,6 +243,9 @@ doc_events = {
 # ]
 
 scheduler_events = {
+    "daily": [
+        "tripod_hr.registry.tracker.nightly_sync"
+    ],
     "monthly": [
         "tripod_hr.tripod_hr.ctc_management.gratuity_provision.update_all_gratuity_provisions",
         "tripod_hr.tripod_hr.ctc_management.budget_snapshot.monthly_capture"
