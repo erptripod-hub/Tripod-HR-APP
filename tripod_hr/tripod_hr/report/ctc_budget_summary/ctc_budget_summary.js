@@ -11,7 +11,7 @@ frappe.query_reports["CTC Budget Summary"] = {
             "fieldname": "budget_unit",
             "label": __("Budget Unit"),
             "fieldtype": "Select",
-            "options": "\nFit Out UAE\nDubai Production\nDubai Office\nKSA Office\nKSA National\nKSA Production\nKSA Fit Out\nLogistics\nAdmin\nTap Gulf"
+            "options": "\nFit Out UAE\nDubai Production\nDubai Office\nLuxxe Production\nLuxxe Office\nLuxxe Fitout\nLuxxe Logistics\nKSA Office\nKSA National\nKSA Production\nKSA Fit Out\nLogistics\nAdmin\nTap Gulf"
         }
     ],
     "formatter": function (value, row, column, data, default_formatter) {

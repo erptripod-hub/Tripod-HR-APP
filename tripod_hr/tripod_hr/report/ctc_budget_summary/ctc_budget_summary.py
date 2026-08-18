@@ -10,11 +10,14 @@ from frappe import _
 REGION_ORDER = {"UAE": 1, "KSA": 2}
 UNIT_ORDER = {
     "Fit Out UAE": 1, "Dubai Production": 2, "Dubai Office": 3,
-    "KSA Office": 4, "KSA National": 5, "KSA Production": 6, "KSA Fit Out": 7,
-    "Logistics": 8, "Admin": 9, "Tap Gulf": 10,
+    "Luxxe Production": 4, "Luxxe Office": 5, "Luxxe Fitout": 6, "Luxxe Logistics": 7,
+    "KSA Office": 8, "KSA National": 9, "KSA Production": 10, "KSA Fit Out": 11,
+    "Logistics": 12, "Admin": 13, "Tap Gulf": 14,
 }
 UNIT_REGION = {
     "Fit Out UAE": "UAE", "Dubai Production": "UAE", "Dubai Office": "UAE",
+    "Luxxe Production": "UAE", "Luxxe Office": "UAE",
+    "Luxxe Fitout": "UAE", "Luxxe Logistics": "UAE",
     "KSA Office": "KSA", "KSA National": "KSA", "KSA Production": "KSA", "KSA Fit Out": "KSA",
     "Logistics": "KSA", "Admin": "KSA", "Tap Gulf": "KSA",
 }
