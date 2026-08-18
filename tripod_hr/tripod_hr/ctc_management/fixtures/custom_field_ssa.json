@@ -72,7 +72,9 @@
   "fieldname": "custom_total_salary",
   "label": "Total Salary (Monthly)",
   "fieldtype": "Currency",
-  "insert_after": "custom_transport"
+  "insert_after": "custom_transport",
+  "read_only": 1,
+  "description": "Computed from the salary components by the 'Total salary field updates' Client Script."
  },
  {
   "dt": "Salary Structure Assignment",
