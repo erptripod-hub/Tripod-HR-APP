@@ -8,6 +8,7 @@ from frappe import _
 
 TM_COMPANY = "Tripod Media FZ LLC"
 TG_COMPANY = "TRIPOD GLOBAL SHOPFIT MANUFACTURING COMPANY"
+LAMEF_COMPANY = "Luxxe Atelier Middle East FZ-LLC"
 
 TM_CONFIG = {
     "locations": [
@@ -67,8 +68,49 @@ TG_CONFIG = {
 }
 
 
+LAMEF_CONFIG = {
+    "locations": [
+        "Luxxe Warehouse",
+        "Luxxe - Logistics",
+        "Luxxe Staff on Leave",
+        "Luxxe (TM Visa)",
+        "Cancel",
+        "Admin - Home/ Security",
+    ],
+    "keys": {
+        "Luxxe Warehouse": "warehouse",
+        "Luxxe - Logistics": "logistics",
+        "Luxxe Staff on Leave": "on_leave",
+        "Luxxe (TM Visa)": "tm_visa",
+        "Cancel": "cancel",
+        "Admin - Home/ Security": "admin_home",
+    },
+    "dept_order": {
+        "Management - LAMEF": 1,
+        "Operations - LAMEF": 2,
+        "Design - LAMEF": 3,
+        "Projects - LAMEF": 4,
+        "Purchase - LAMEF": 5,
+        "Logistics - LAMEF": 6,
+        "Production - LAMEF": 7,
+    },
+    "chart_labels": ["Warehouse", "Logistics", "On Leave", "TM Visa", "Cancel", "Admin/Home"],
+    "chart_colors": ["#378ADD", "#85B7EB", "#888780", "#534AB7", "#B4B2A9", "#888780"],
+    "summary": [
+        ("total", "Total Manpower", "Blue"),
+        ("warehouse", "In Warehouse", "Blue"),
+        ("logistics", "Logistics", "Green"),
+        ("on_leave", "Staff on Leave", "Orange"),
+    ],
+}
+
+
 def get_config(company):
-    return TG_CONFIG if company == TG_COMPANY else TM_CONFIG
+    if company == TG_COMPANY:
+        return TG_CONFIG
+    if company == LAMEF_COMPANY:
+        return LAMEF_CONFIG
+    return TM_CONFIG
 
 
 def execute(filters=None):
@@ -76,7 +118,7 @@ def execute(filters=None):
     company = filters.get("company") or TM_COMPANY
     cfg = get_config(company)
 
-    data = get_data(company, cfg)
+    data = get_data(company, cfg, filters.get("employment_type"))
     return get_columns(cfg), data, None, get_chart(data, cfg), get_report_summary(data, cfg)
 
 
@@ -92,7 +134,16 @@ def get_columns(cfg):
     return cols
 
 
-def get_data(company, cfg):
+def get_data(company, cfg, employment_type=None):
+    conditions = ""
+    values = {"company": company}
+
+    if employment_type and employment_type != "All":
+        conditions = "AND e.employment_type = %(employment_type)s"
+        values["employment_type"] = employment_type
+    elif not employment_type:
+        conditions = "AND e.employment_type = 'Labour'"
+
     rows = frappe.db.sql(
         """
         SELECT
@@ -103,10 +154,10 @@ def get_data(company, cfg):
         FROM `tabEmployee` e
         WHERE e.company = %(company)s
           AND e.status != 'Left'
-          AND e.employment_type = 'Labour'
+          {conditions}
         GROUP BY e.department, e.custom_sub_department, e.location
-        """,
-        {"company": company},
+        """.format(conditions=conditions),
+        values,
         as_dict=True,
     )
 
