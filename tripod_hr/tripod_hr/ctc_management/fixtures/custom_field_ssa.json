@@ -1,12 +1,95 @@
 [
-  {"dt":"Salary Structure Assignment","fieldname":"custom_ctc_section","label":"CTC Components","fieldtype":"Section Break","insert_after":"base","collapsible":1},
-  {"dt":"Salary Structure Assignment","fieldname":"custom_accommodation","label":"Accommodation","fieldtype":"Currency","insert_after":"custom_ctc_section","read_only":1,"allow_on_submit":1},
-  {"dt":"Salary Structure Assignment","fieldname":"custom_visa","label":"Visa","fieldtype":"Currency","insert_after":"custom_accommodation","read_only":1,"allow_on_submit":1},
-  {"dt":"Salary Structure Assignment","fieldname":"custom_iqama","label":"Iqama","fieldtype":"Currency","insert_after":"custom_visa","read_only":1,"allow_on_submit":1},
-  {"dt":"Salary Structure Assignment","fieldname":"custom_medical_insurance","label":"Medical Insurance","fieldtype":"Currency","insert_after":"custom_iqama","read_only":1,"allow_on_submit":1},
-  {"dt":"Salary Structure Assignment","fieldname":"custom_column_break_ssa","fieldtype":"Column Break","insert_after":"custom_medical_insurance"},
-  {"dt":"Salary Structure Assignment","fieldname":"custom_ticket_allowance","label":"Ticket Allowance","fieldtype":"Currency","insert_after":"custom_column_break_ssa","read_only":1,"allow_on_submit":1},
-  {"dt":"Salary Structure Assignment","fieldname":"custom_transport","label":"Transport","fieldtype":"Currency","insert_after":"custom_ticket_allowance","read_only":1,"allow_on_submit":1},
-  {"dt":"Salary Structure Assignment","fieldname":"custom_gratuity_monthly","label":"Gratuity / Month","fieldtype":"Currency","insert_after":"custom_transport","read_only":1,"allow_on_submit":1},
-  {"dt":"Salary Structure Assignment","fieldname":"custom_annual_ctc","label":"Annual CTC","fieldtype":"Currency","insert_after":"custom_gratuity_monthly","read_only":1,"allow_on_submit":1}
+ {
+  "dt": "Salary Structure Assignment",
+  "fieldname": "custom_ctc_section",
+  "label": "CTC Components",
+  "fieldtype": "Section Break",
+  "insert_after": "base",
+  "collapsible": 1
+ },
+ {
+  "dt": "Salary Structure Assignment",
+  "fieldname": "custom_accommodation",
+  "label": "Accommodation",
+  "fieldtype": "Currency",
+  "insert_after": "custom_ctc_section",
+  "read_only": 1,
+  "allow_on_submit": 1
+ },
+ {
+  "dt": "Salary Structure Assignment",
+  "fieldname": "custom_visa",
+  "label": "Visa",
+  "fieldtype": "Currency",
+  "insert_after": "custom_accommodation",
+  "read_only": 1,
+  "allow_on_submit": 1
+ },
+ {
+  "dt": "Salary Structure Assignment",
+  "fieldname": "custom_iqama",
+  "label": "Iqama",
+  "fieldtype": "Currency",
+  "insert_after": "custom_visa",
+  "read_only": 1,
+  "allow_on_submit": 1
+ },
+ {
+  "dt": "Salary Structure Assignment",
+  "fieldname": "custom_medical_insurance",
+  "label": "Medical Insurance",
+  "fieldtype": "Currency",
+  "insert_after": "custom_iqama",
+  "read_only": 1,
+  "allow_on_submit": 1
+ },
+ {
+  "dt": "Salary Structure Assignment",
+  "fieldname": "custom_column_break_ssa",
+  "fieldtype": "Column Break",
+  "insert_after": "custom_medical_insurance"
+ },
+ {
+  "dt": "Salary Structure Assignment",
+  "fieldname": "custom_ticket_allowance",
+  "label": "Ticket Allowance",
+  "fieldtype": "Currency",
+  "insert_after": "custom_column_break_ssa",
+  "read_only": 1,
+  "allow_on_submit": 1
+ },
+ {
+  "dt": "Salary Structure Assignment",
+  "fieldname": "custom_transport",
+  "label": "Transport",
+  "fieldtype": "Currency",
+  "insert_after": "custom_ticket_allowance",
+  "read_only": 1,
+  "allow_on_submit": 1
+ },
+ {
+  "dt": "Salary Structure Assignment",
+  "fieldname": "custom_total_salary",
+  "label": "Total Salary (Monthly)",
+  "fieldtype": "Currency",
+  "insert_after": "custom_transport"
+ },
+ {
+  "dt": "Salary Structure Assignment",
+  "fieldname": "custom_gratuity_monthly",
+  "label": "Gratuity / Month",
+  "fieldtype": "Currency",
+  "insert_after": "custom_total_salary",
+  "read_only": 1,
+  "allow_on_submit": 1
+ },
+ {
+  "dt": "Salary Structure Assignment",
+  "fieldname": "custom_annual_ctc",
+  "label": "Annual CTC",
+  "fieldtype": "Currency",
+  "insert_after": "custom_gratuity_monthly",
+  "read_only": 1,
+  "allow_on_submit": 1
+ }
 ]
