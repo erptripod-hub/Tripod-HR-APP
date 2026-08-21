@@ -9,13 +9,31 @@ frappe.pages['hr-budget-dashboard'].on_page_load = function (wrapper) {
 		fieldname: 'company',
 		label: 'Company',
 		fieldtype: 'Select',
-		options: [
-			{ label: 'All (Tripod Media + Global)', value: 'All' },
-			{ label: 'Tripod Media', value: 'Tripod Media FZ LLC' },
-			{ label: 'Tripod Global', value: 'TRIPOD GLOBAL SHOPFIT MANUFACTURING COMPANY' }
-		],
+		options: [{ label: 'All companies', value: 'All' }],
 		default: 'All',
 		change: function () { load(); }
+	});
+
+	// Companies are read from the site rather than hardcoded, so a new
+	// company appears here without a code change.
+	frappe.call({
+		method: 'tripod_hr.tripod_hr.page.hr_budget_dashboard.hr_budget_dashboard.get_filter_options',
+		callback: function (r) {
+			var names = (r && r.message && r.message.companies) || [];
+			if (!names.length) return;
+
+			var opts = [];
+			if (names.length > 1) {
+				opts.push({ label: 'All companies', value: 'All' });
+			}
+			names.forEach(function (n) { opts.push({ label: n, value: n }); });
+
+			company_field.df.options = opts;
+			company_field.refresh();
+			if (names.length === 1) {
+				company_field.set_value(names[0]);
+			}
+		}
 	});
 
 	page.add_inner_button('Refresh', function () { load(); });

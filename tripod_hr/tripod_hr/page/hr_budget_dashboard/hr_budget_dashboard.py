@@ -407,3 +407,45 @@ def _movement(company, current_ctc):
         "closing": round(running),
         "undated_leavers": undated_count,
     }
+
+
+@frappe.whitelist()
+def get_filter_options():
+    """
+    Companies and budget units actually present on this site.
+
+    Hardcoded lists meant a new company (Luxxe) was invisible in the
+    dashboard even though its data existed. Reading from the database means
+    no site needs a code change to appear here.
+    """
+    companies = frappe.get_all(
+        "Company", fields=["name"], order_by="name"
+    )
+
+    units = frappe.db.sql(
+        """
+        SELECT DISTINCT custom_budget_unit AS unit
+        FROM `tabEmployee`
+        WHERE status = 'Active'
+            AND IFNULL(custom_budget_unit, '') != ''
+        ORDER BY custom_budget_unit
+        """,
+        as_dict=True,
+    )
+
+    regions = frappe.db.sql(
+        """
+        SELECT DISTINCT custom_region AS region
+        FROM `tabEmployee`
+        WHERE status = 'Active'
+            AND IFNULL(custom_region, '') != ''
+        ORDER BY custom_region
+        """,
+        as_dict=True,
+    )
+
+    return {
+        "companies": [c.name for c in companies],
+        "units": [u.unit for u in units],
+        "regions": [r.region for r in regions],
+    }
