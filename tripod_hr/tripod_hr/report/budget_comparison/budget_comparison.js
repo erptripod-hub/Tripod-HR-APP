@@ -29,8 +29,9 @@ frappe.query_reports["Budget Comparison"] = {
     "formatter": function (value, row, column, data, default_formatter) {
         value = default_formatter(value, row, column, data);
         if (data && data._grand) value = `<span style="font-weight:700;">${value}</span>`;
-        if (column.fieldname==="ctc_delta" && data && data.ctc_delta<0) value=`<span style="color:#C0392B;">${value}</span>`;
-        if (column.fieldname==="ctc_delta" && data && data.ctc_delta>0) value=`<span style="color:#0F6E56;">${value}</span>`;
+        const money_col = ["ctc_delta","ctc_pct","effect"].includes(column.fieldname);
+        if (money_col && data && data.ctc_delta < 0) value=`<span style="color:#0F6E56;">${value}</span>`;
+        if (money_col && data && data.ctc_delta > 0) value=`<span style="color:#C0392B;">${value}</span>`;
         return value;
     }
 };

@@ -1,11 +1,41 @@
 // Copyright (c) 2026, Tripod Mena
+const TRIPOD_UNITS_BY_REGION = {
+    "UAE": ["Fit Out UAE", "Dubai Production", "Dubai Office", "Logistics", "Admin"],
+    "KSA": ["KSA Office", "KSA National", "KSA Production", "KSA Fit Out", "Tap Gulf", "Logistics", "Admin"]
+};
+const TRIPOD_ALL_UNITS = [
+    "Fit Out UAE", "Dubai Production", "Dubai Office",
+    "KSA Office", "KSA National", "KSA Production", "KSA Fit Out",
+    "Logistics", "Admin", "Tap Gulf"
+];
+
+function tripod_set_unit_options(report, region) {
+    const units = region ? (TRIPOD_UNITS_BY_REGION[region] || []) : TRIPOD_ALL_UNITS;
+    const unit_filter = report.get_filter("budget_unit");
+    if (!unit_filter) return;
+    const current = unit_filter.get_value();
+    unit_filter.df.options = "\n" + units.join("\n");
+    unit_filter.refresh();
+    if (current && !units.includes(current)) {
+        unit_filter.set_value("");
+    }
+}
+
 frappe.query_reports["CTC Budget Summary"] = {
+    "onload": function (report) {
+        tripod_set_unit_options(report, report.get_filter_value("region"));
+    },
     "filters": [
         {
             "fieldname": "region",
             "label": __("Region"),
             "fieldtype": "Select",
-            "options": "\nUAE\nKSA"
+            "options": "\nUAE\nKSA",
+            "on_change": function () {
+                const report = frappe.query_report;
+                tripod_set_unit_options(report, report.get_filter_value("region"));
+                report.refresh();
+            }
         },
         {
             "fieldname": "budget_unit",
