@@ -11,6 +11,11 @@ frappe.pages['leave-planner-board'].on_page_load = function (wrapper) {
 
 var LPB_METHOD = 'tripod_hr.tripod_hr.doctype.leave_plan_request.leave_plan_request.';
 
+var LPB_MONTH_NAMES = [
+	'January', 'February', 'March', 'April', 'May', 'June',
+	'July', 'August', 'September', 'October', 'November', 'December'
+];
+
 var LPB_STATUS_COLOR = {
 	Planned: '#AFA9EC',
 	Approved: '#5DCAA5',
@@ -72,7 +77,7 @@ var LeavePlannerBoard = class LeavePlannerBoard {
 		var html = '';
 
 		html += '<div class="lpb-root" style="margin-top:-15px;">';
-		html += '<div class="lpb-controls" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:12px;"></div>';
+		html += '<div class="lpb-controls" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding-top:24px;margin-bottom:12px;"></div>';
 		html += '<div class="lpb-legend" style="margin-bottom:10px;font-size:12px;color:#6c7680;"></div>';
 		html += '<div class="lpb-grid" style="overflow-x:auto;border:1px solid #e2e6e9;border-radius:8px;padding:10px;background:#fff;"></div>';
 		html += '<div class="lpb-summary" style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap;"></div>';
@@ -194,7 +199,7 @@ var LeavePlannerBoard = class LeavePlannerBoard {
 		var bounds = this.month_bounds();
 
 		$(this.wrapper).find('.lpb-month-label').text(
-			frappe.datetime.str_to_user(bounds.start).slice(3)
+			LPB_MONTH_NAMES[this.month - 1] + ' ' + this.year
 		);
 
 		frappe.call({
