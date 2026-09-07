@@ -12,7 +12,8 @@ LAMEF_COMPANY = "Luxxe Atelier Middle East FZ-LLC"
 
 TM_CONFIG = {
     "locations": [
-        "DXB",
+        "DXB Factory",
+        "DXB Office",
         "DXB - Logistics",
         "DXB Staff on Leave",
         "KSA (DXB Visa)",
@@ -20,23 +21,38 @@ TM_CONFIG = {
         "Cancel",
         "Admin - Home/ Security",
     ],
+    "labels": {
+        "DXB Factory": "Factory",
+        "DXB Office": "Office",
+        "DXB - Logistics": "Logistics",
+        "DXB Staff on Leave": "On Leave",
+        "KSA (DXB Visa)": "KSA",
+        "Luxxe (TM Visa)": "Luxxe",
+        "Cancel": "Cancel",
+        "Admin - Home/ Security": "Admin/Home",
+    },
     "keys": {
-        "DXB": "dxb",
+        "DXB Factory": "dxb",
+        "DXB Office": "dxb_office",
         "DXB - Logistics": "dxb_logistics",
         "DXB Staff on Leave": "dxb_leave",
         "KSA (DXB Visa)": "ksa",
+        # plain "KSA" is a separate Location record holding office staff who
+        # work in KSA on a Dubai visa — same column as KSA (DXB Visa).
+        "KSA": "ksa",
         "Luxxe (TM Visa)": "luxxe",
         "Cancel": "cancel",
         "Admin - Home/ Security": "admin_home",
     },
     "dept_order": {"ADMIN": 1, "Fitout - TM": 2, "Logistics - TM": 3, "Production  - TM": 4},
-    "chart_labels": ["Dubai", "Logistics", "On Leave", "KSA", "Luxxe", "Cancel", "Admin/Home"],
-    "chart_colors": ["#378ADD", "#85B7EB", "#888780", "#1D9E75", "#534AB7", "#B4B2A9", "#888780"],
+    "chart_labels": ["Factory", "Office", "Logistics", "On Leave", "KSA", "Luxxe", "Cancel", "Admin/Home"],
+    "chart_colors": ["#378ADD", "#6BA3E5", "#85B7EB", "#888780", "#1D9E75", "#534AB7", "#B4B2A9", "#888780"],
     "summary": [
         ("total", "Total Manpower", "Blue"),
-        ("dxb", "In Dubai (DXB)", "Blue"),
-        ("ksa", "KSA (DXB Visa)", "Green"),
-        ("luxxe", "Luxxe (TM Visa)", "Purple"),
+        ("dxb", "In Factory", "Blue"),
+        ("dxb_office", "In Office", "Blue"),
+        ("ksa", "In KSA", "Green"),
+        ("luxxe", "At Luxxe", "Purple"),
         ("dxb_leave", "Staff on Leave", "Orange"),
     ],
 }
@@ -75,8 +91,8 @@ LAMEF_CONFIG = {
         "Luxxe - Logistics",
         "Luxxe Staff on Leave",
         "Luxxe (TM Visa)",
-        "Luxxe (KSA)",
-        "Luxxe (Tripod Mena)",
+        "Tripod Ksa",
+        "Tripod Mena",
         "Cancel",
         "Admin - Home/ Security",
     ],
@@ -88,8 +104,8 @@ LAMEF_CONFIG = {
         "Luxxe - Logistics": "Logistics",
         "Luxxe Staff on Leave": "On Leave",
         "Luxxe (TM Visa)": "TM Visa",
-        "Luxxe (KSA)": "In KSA",
-        "Luxxe (Tripod Mena)": "In Tripod Mena",
+        "Tripod Ksa": "In KSA",
+        "Tripod Mena": "In Tripod Mena",
         "Cancel": "Cancel",
         "Admin - Home/ Security": "Admin/Home",
     },
@@ -99,8 +115,8 @@ LAMEF_CONFIG = {
         "Luxxe - Logistics": "logistics",
         "Luxxe Staff on Leave": "on_leave",
         "Luxxe (TM Visa)": "tm_visa",
-        "Luxxe (KSA)": "in_ksa",
-        "Luxxe (Tripod Mena)": "in_mena",
+        "Tripod Ksa": "in_ksa",
+        "Tripod Mena": "in_mena",
         "Cancel": "cancel",
         "Admin - Home/ Security": "admin_home",
     },
@@ -174,8 +190,7 @@ def get_data(company, cfg, employment_type=None):
     if employment_type and employment_type != "All":
         conditions = "AND e.employment_type = %(employment_type)s"
         values["employment_type"] = employment_type
-    elif not employment_type:
-        conditions = "AND e.employment_type = 'Labour'"
+    # no filter passed -> show everyone, matching the report default of "All"
 
     rows = frappe.db.sql(
         """

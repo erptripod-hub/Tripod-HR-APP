@@ -13,8 +13,8 @@ frappe.query_reports["Manpower Matrix"] = {
             "fieldname": "employment_type",
             "label": __("Employment Type"),
             "fieldtype": "Select",
-            "options": "Labour\nOffice Staff\nAll",
-            "default": "Labour"
+            "options": "All\nLabour\nOffice Staff",
+            "default": "All"
         }
     ],
     "formatter": function (value, row, column, data, default_formatter) {
