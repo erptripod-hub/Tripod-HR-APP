@@ -71,17 +71,36 @@ TG_CONFIG = {
 LAMEF_CONFIG = {
     "locations": [
         "Luxxe Warehouse",
+        "Luxxe Office",
         "Luxxe - Logistics",
         "Luxxe Staff on Leave",
         "Luxxe (TM Visa)",
+        "Luxxe (KSA)",
+        "Luxxe (Tripod Mena)",
         "Cancel",
         "Admin - Home/ Security",
     ],
+    # short headings — the whole report is Luxxe, so the prefix is noise and
+    # the full names make the table wider than the page.
+    "labels": {
+        "Luxxe Warehouse": "Warehouse",
+        "Luxxe Office": "Office",
+        "Luxxe - Logistics": "Logistics",
+        "Luxxe Staff on Leave": "On Leave",
+        "Luxxe (TM Visa)": "TM Visa",
+        "Luxxe (KSA)": "In KSA",
+        "Luxxe (Tripod Mena)": "In Tripod Mena",
+        "Cancel": "Cancel",
+        "Admin - Home/ Security": "Admin/Home",
+    },
     "keys": {
         "Luxxe Warehouse": "warehouse",
+        "Luxxe Office": "office",
         "Luxxe - Logistics": "logistics",
         "Luxxe Staff on Leave": "on_leave",
         "Luxxe (TM Visa)": "tm_visa",
+        "Luxxe (KSA)": "in_ksa",
+        "Luxxe (Tripod Mena)": "in_mena",
         "Cancel": "cancel",
         "Admin - Home/ Security": "admin_home",
     },
@@ -94,12 +113,14 @@ LAMEF_CONFIG = {
         "Logistics - LAMEF": 6,
         "Production - LAMEF": 7,
     },
-    "chart_labels": ["Warehouse", "Logistics", "On Leave", "TM Visa", "Cancel", "Admin/Home"],
-    "chart_colors": ["#378ADD", "#85B7EB", "#888780", "#534AB7", "#B4B2A9", "#888780"],
+    "chart_labels": ["Warehouse", "Office", "Logistics", "On Leave", "TM Visa",
+                     "In KSA", "Tripod Mena", "Cancel", "Admin/Home"],
+    "chart_colors": ["#378ADD", "#6BA3E5", "#85B7EB", "#888780", "#534AB7",
+                     "#1D9E75", "#9A6A2F", "#B4B2A9", "#888780"],
     "summary": [
         ("total", "Total Manpower", "Blue"),
         ("warehouse", "In Warehouse", "Blue"),
-        ("logistics", "Logistics", "Green"),
+        ("office", "Office", "Blue"),
         ("on_leave", "Staff on Leave", "Orange"),
     ],
 }
@@ -119,18 +140,30 @@ def execute(filters=None):
     cfg = get_config(company)
 
     data = get_data(company, cfg, filters.get("employment_type"))
-    return get_columns(cfg), data, None, get_chart(data, cfg), get_report_summary(data, cfg)
+    show_unmapped = any(r.get("unmapped") for r in data)
+    return (get_columns(cfg, show_unmapped), data, None,
+            get_chart(data, cfg), get_report_summary(data, cfg))
 
 
-def get_columns(cfg):
+def get_columns(cfg, show_unmapped=False):
+    labels = cfg.get("labels", {})
+    n_loc = len(cfg["locations"])
+    # Keep the table inside the page: the more location columns a company has,
+    # the narrower each one gets, so the report never needs a horizontal scroll.
+    loc_w = 130 if n_loc <= 6 else (105 if n_loc <= 8 else 92)
+    name_w = 175 if n_loc <= 6 else 150
+    sect_w = 165 if n_loc <= 6 else 135
+
     cols = [
-        {"label": _("Department"), "fieldname": "department", "fieldtype": "Data", "width": 190},
-        {"label": _("Section"), "fieldname": "section", "fieldtype": "Data", "width": 180},
+        {"label": _("Department"), "fieldname": "department", "fieldtype": "Data", "width": name_w},
+        {"label": _("Section"), "fieldname": "section", "fieldtype": "Data", "width": sect_w},
     ]
     for loc in cfg["locations"]:
-        cols.append({"label": _(loc), "fieldname": cfg["keys"][loc], "fieldtype": "Int", "width": 130})
-    cols.append({"label": _("Unmapped"), "fieldname": "unmapped", "fieldtype": "Int", "width": 100})
-    cols.append({"label": _("Total"), "fieldname": "total", "fieldtype": "Int", "width": 90})
+        cols.append({"label": _(labels.get(loc, loc)), "fieldname": cfg["keys"][loc],
+                     "fieldtype": "Int", "width": loc_w})
+    if show_unmapped:
+        cols.append({"label": _("Unmapped"), "fieldname": "unmapped", "fieldtype": "Int", "width": 95})
+    cols.append({"label": _("Total"), "fieldname": "total", "fieldtype": "Int", "width": 80})
     return cols
 
 
@@ -173,7 +206,12 @@ def get_data(company, cfg, employment_type=None):
         tree.setdefault(dept, {}).setdefault(sec, {})
         tree[dept][sec][key] = tree[dept][sec].get(key, 0) + r["cnt"]
 
-    col_keys = [keys[l] for l in cfg["locations"]] + ["unmapped"]
+    col_keys = [keys[l] for l in cfg["locations"]]
+    # Only carry an Unmapped column when a location outside the config is in
+    # use — otherwise those employees would disappear from the report silently.
+    has_unmapped = any("unmapped" in secs for d in tree.values() for secs in d.values())
+    if has_unmapped:
+        col_keys.append("unmapped")
     data = []
     grand = {k: 0 for k in col_keys}
     grand_total = 0
