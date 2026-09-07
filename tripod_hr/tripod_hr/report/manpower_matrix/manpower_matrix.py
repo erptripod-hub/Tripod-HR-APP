@@ -11,7 +11,8 @@ TG_COMPANY = "TRIPOD GLOBAL SHOPFIT MANUFACTURING COMPANY"
 
 TM_CONFIG = {
     "locations": [
-        "DXB",
+        "DXB Factory",
+        "DXB Office",
         "DXB - Logistics",
         "DXB Staff on Leave",
         "KSA (DXB Visa)",
@@ -19,23 +20,38 @@ TM_CONFIG = {
         "Cancel",
         "Admin - Home/ Security",
     ],
+    "labels": {
+        "DXB Factory": "Factory",
+        "DXB Office": "Office",
+        "DXB - Logistics": "Logistics",
+        "DXB Staff on Leave": "On Leave",
+        "KSA (DXB Visa)": "KSA",
+        "Luxxe (TM Visa)": "Luxxe",
+        "Cancel": "Cancel",
+        "Admin - Home/ Security": "Admin/Home",
+    },
     "keys": {
-        "DXB": "dxb",
+        "DXB Factory": "dxb",
+        "DXB Office": "dxb_office",
         "DXB - Logistics": "dxb_logistics",
         "DXB Staff on Leave": "dxb_leave",
         "KSA (DXB Visa)": "ksa",
+        # plain "KSA" is a separate Location record holding office staff working
+        # in KSA on a Dubai visa — same column as KSA (DXB Visa).
+        "KSA": "ksa",
         "Luxxe (TM Visa)": "luxxe",
         "Cancel": "cancel",
         "Admin - Home/ Security": "admin_home",
     },
     "dept_order": {"ADMIN": 1, "Fitout - TM": 2, "Logistics - TM": 3, "Production  - TM": 4},
-    "chart_labels": ["Dubai", "Logistics", "On Leave", "KSA", "Luxxe", "Cancel", "Admin/Home"],
-    "chart_colors": ["#378ADD", "#85B7EB", "#888780", "#1D9E75", "#534AB7", "#B4B2A9", "#888780"],
+    "chart_labels": ["Factory", "Office", "Logistics", "On Leave", "KSA", "Luxxe", "Cancel", "Admin/Home"],
+    "chart_colors": ["#378ADD", "#6BA3E5", "#85B7EB", "#888780", "#1D9E75", "#534AB7", "#B4B2A9", "#888780"],
     "summary": [
         ("total", "Total Manpower", "Blue"),
-        ("dxb", "In Dubai (DXB)", "Blue"),
-        ("ksa", "KSA (DXB Visa)", "Green"),
-        ("luxxe", "Luxxe (TM Visa)", "Purple"),
+        ("dxb", "In Factory", "Blue"),
+        ("dxb_office", "In Office", "Blue"),
+        ("ksa", "In KSA", "Green"),
+        ("luxxe", "At Luxxe", "Purple"),
         ("dxb_leave", "Staff on Leave", "Orange"),
     ],
 }
@@ -76,7 +92,7 @@ def execute(filters=None):
     company = filters.get("company") or TM_COMPANY
     cfg = get_config(company)
 
-    data = get_data(company, cfg)
+    data = get_data(company, cfg, filters.get("employment_type"))
     return get_columns(cfg), data, None, get_chart(data, cfg), get_report_summary(data, cfg)
 
 
@@ -85,14 +101,23 @@ def get_columns(cfg):
         {"label": _("Department"), "fieldname": "department", "fieldtype": "Data", "width": 190},
         {"label": _("Section"), "fieldname": "section", "fieldtype": "Data", "width": 180},
     ]
+    labels = cfg.get("labels", {})
+    loc_w = 130 if len(cfg["locations"]) <= 6 else 105
     for loc in cfg["locations"]:
-        cols.append({"label": _(loc), "fieldname": cfg["keys"][loc], "fieldtype": "Int", "width": 130})
+        cols.append({"label": _(labels.get(loc, loc)), "fieldname": cfg["keys"][loc],
+                     "fieldtype": "Int", "width": loc_w})
     cols.append({"label": _("Unmapped"), "fieldname": "unmapped", "fieldtype": "Int", "width": 100})
     cols.append({"label": _("Total"), "fieldname": "total", "fieldtype": "Int", "width": 90})
     return cols
 
 
-def get_data(company, cfg):
+def get_data(company, cfg, employment_type=None):
+    conditions = ""
+    values = {"company": company}
+    if employment_type and employment_type != "All":
+        conditions = "AND e.employment_type = %(employment_type)s"
+        values["employment_type"] = employment_type
+
     rows = frappe.db.sql(
         """
         SELECT
@@ -103,10 +128,10 @@ def get_data(company, cfg):
         FROM `tabEmployee` e
         WHERE e.company = %(company)s
           AND e.status != 'Left'
-          AND e.employment_type = 'Labour'
+          {conditions}
         GROUP BY e.department, e.custom_sub_department, e.location
-        """,
-        {"company": company},
+        """.format(conditions=conditions),
+        values,
         as_dict=True,
     )
 

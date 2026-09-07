@@ -8,6 +8,13 @@ frappe.query_reports["Manpower Matrix"] = {
             "options": "Company",
             "default": "Tripod Media FZ LLC",
             "reqd": 1
+        },
+        {
+            "fieldname": "employment_type",
+            "label": __("Employment Type"),
+            "fieldtype": "Select",
+            "options": "All\nLabour\nOffice Staff",
+            "default": "All"
         }
     ],
     "formatter": function (value, row, column, data, default_formatter) {
