@@ -37,6 +37,10 @@ frappe.ui.form.on('Leave Plan Request', {
 		frm.set_value('section', '');
 	},
 
+	leave_type: function (frm) {
+		set_total_days(frm);
+	},
+
 	from_date: function (frm) {
 		set_total_days(frm);
 	},
@@ -47,12 +51,34 @@ frappe.ui.form.on('Leave Plan Request', {
 });
 
 function set_total_days(frm) {
-	if (!frm.doc.from_date || !frm.doc.to_date) {
+	if (!frm.doc.employee || !frm.doc.leave_type || !frm.doc.from_date || !frm.doc.to_date) {
 		return;
 	}
 
-	var days = frappe.datetime.get_day_diff(frm.doc.to_date, frm.doc.from_date) + 1;
-	if (days > 0) {
-		frm.set_value('total_days', days);
+	if (frappe.datetime.get_day_diff(frm.doc.to_date, frm.doc.from_date) < 0) {
+		return;
 	}
+
+	frappe.call({
+		method: 'tripod_hr.tripod_hr.doctype.leave_plan_request.leave_plan_request.get_planned_days',
+		args: {
+			employee: frm.doc.employee,
+			leave_type: frm.doc.leave_type,
+			from_date: frm.doc.from_date,
+			to_date: frm.doc.to_date
+		},
+		callback: function (r) {
+			if (!r.message) {
+				return;
+			}
+
+			frm.set_value('total_days', r.message.total_days);
+
+			if (r.message.excluded) {
+				frm.set_value('balance_note', __('{0} calendar days, {1} holidays / weekends excluded.', [r.message.calendar_days, r.message.excluded]));
+			} else {
+				frm.set_value('balance_note', '');
+			}
+		}
+	});
 }

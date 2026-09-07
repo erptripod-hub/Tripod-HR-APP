@@ -151,7 +151,7 @@
    "fieldtype": "Column Break"
   },
   {
-   "description": "Calculated from the dates on save. Adjust manually for half days.",
+   "description": "Holidays and weekends from the employee's holiday list are excluded, same as Leave Application. Adjust manually for half days.",
    "fieldname": "total_days",
    "fieldtype": "Float",
    "in_list_view": 1,
@@ -185,7 +185,7 @@
    "label": "Reason / Remarks"
   },
   {
-   "description": "Informational only. A plan is never checked against the leave ledger.",
+   "description": "Shows how many days were excluded as holidays or weekends. A plan is never checked against the leave ledger.",
    "fieldname": "balance_note",
    "fieldtype": "Small Text",
    "label": "Balance Note"
