@@ -13,6 +13,52 @@ SECTION_FIELD_CANDIDATES = (
 )
 
 
+def get_leave_days_function():
+	"""Leave Application moved from erpnext (v14) to hrms (v15). Support both."""
+	try:
+		from hrms.hr.doctype.leave_application.leave_application import get_number_of_leave_days
+	except ImportError:
+		from erpnext.hr.doctype.leave_application.leave_application import get_number_of_leave_days
+
+	return get_number_of_leave_days
+
+
+def calculate_planned_days(employee, leave_type, from_date, to_date):
+	"""Same rule as Leave Application: holiday list entries (weekends included)
+	are excluded unless the Leave Type includes holidays within leaves."""
+	calendar_days = date_diff(to_date, from_date) + 1
+
+	try:
+		get_number_of_leave_days = get_leave_days_function()
+		working_days = flt(get_number_of_leave_days(employee, leave_type, from_date, to_date))
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "Leave Plan Request day calculation")
+		return {
+			"total_days": calendar_days,
+			"calendar_days": calendar_days,
+			"excluded": 0,
+			"fallback": 1,
+		}
+
+	return {
+		"total_days": working_days,
+		"calendar_days": calendar_days,
+		"excluded": calendar_days - working_days,
+		"fallback": 0,
+	}
+
+
+@frappe.whitelist()
+def get_planned_days(employee, leave_type, from_date, to_date):
+	if not (employee and leave_type and from_date and to_date):
+		return None
+
+	if getdate(to_date) < getdate(from_date):
+		return None
+
+	return calculate_planned_days(employee, leave_type, from_date, to_date)
+
+
 def get_section_fieldname():
 	meta = frappe.get_meta("Employee")
 	for fieldname in SECTION_FIELD_CANDIDATES:
@@ -46,10 +92,43 @@ class LeavePlanRequest(Document):
 			frappe.throw(_("To Date cannot be before From Date."))
 
 	def set_total_days(self):
-		if not (self.from_date and self.to_date):
+		if not (self.from_date and self.to_date and self.employee and self.leave_type):
 			return
-		if not flt(self.total_days):
-			self.total_days = date_diff(self.to_date, self.from_date) + 1
+
+		dates_changed = (
+			self.is_new()
+			or self.has_value_changed("from_date")
+			or self.has_value_changed("to_date")
+			or self.has_value_changed("leave_type")
+		)
+
+		if not dates_changed and flt(self.total_days):
+			return
+
+		result = calculate_planned_days(self.employee, self.leave_type, self.from_date, self.to_date)
+		self.total_days = result["total_days"]
+
+		if result["fallback"]:
+			frappe.msgprint(
+				_("Holiday list could not be read for this employee. Total days counted as calendar days."),
+				indicator="orange",
+				alert=True,
+			)
+			return
+
+		if flt(self.total_days) <= 0:
+			frappe.msgprint(
+				_("Every day in this range is a holiday or weekend for this employee."),
+				indicator="orange",
+				alert=True,
+			)
+
+		if result["excluded"]:
+			self.balance_note = _("{0} calendar days, {1} holidays / weekends excluded.").format(
+				result["calendar_days"], result["excluded"]
+			)
+		else:
+			self.balance_note = None
 
 	def validate_overlap(self):
 		if not (self.employee and self.from_date and self.to_date):
