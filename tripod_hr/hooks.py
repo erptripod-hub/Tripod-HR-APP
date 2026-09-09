@@ -78,6 +78,7 @@ after_migrate = [
     "tripod_hr.tripod_hr.ctc_management.install_ctc_fields.install",
     "tripod_hr.tripod_hr.payroll_filter.install_employment_type_field.install",
     "tripod_hr.tripod_hr.ctc_management.install_budget_dashboard.after_migrate",
+    "tripod_hr.tripod_hr.ctc_management.install_transfer_fields.install",
     "tripod_hr.registry.migration.diff_after_migrate"
 ]
 
@@ -120,6 +121,7 @@ override_doctype_class = {
 
 doc_events = {
 	"Employee": {
+		"validate": "tripod_hr.tripod_hr.ctc_management.transfer_sync.apply_latest_transfer",
 		"before_save": "tripod_hr.events.ctc_automation.employee_before_save"
 	},
 	"Salary Structure Assignment": {
