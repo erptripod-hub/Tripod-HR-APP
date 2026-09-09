@@ -43,6 +43,9 @@ TM_CONFIG = {
         "Cancel": "cancel",
         "Admin - Home/ Security": "admin_home",
     },
+    # Inactive employees are excluded, EXCEPT the ones transferred to Luxxe:
+    # they stay visible on the Tripod Media matrix by design.
+    "keep_inactive_at": "Luxxe (TM Visa)",
     "dept_order": {"ADMIN": 1, "Fitout - TM": 2, "Logistics - TM": 3, "Production  - TM": 4},
     "chart_labels": ["Factory", "Office", "Logistics", "On Leave", "KSA", "Luxxe", "Cancel", "Admin/Home"],
     "chart_colors": ["#378ADD", "#6BA3E5", "#85B7EB", "#888780", "#1D9E75", "#534AB7", "#B4B2A9", "#888780"],
@@ -114,6 +117,16 @@ def get_columns(cfg):
 def get_data(company, cfg, employment_type=None):
     conditions = ""
     values = {"company": company}
+
+    # Active only, plus Inactive staff parked at the company's transfer
+    # location (Tripod Media keeps the people moved to Luxxe visible).
+    keep_at = cfg.get("keep_inactive_at")
+    if keep_at:
+        status_clause = ("e.status = 'Active' OR "
+                         "(e.status = 'Inactive' AND e.location = %(keep_at)s)")
+        values["keep_at"] = keep_at
+    else:
+        status_clause = "e.status = 'Active'"
     if employment_type and employment_type != "All":
         conditions = "AND e.employment_type = %(employment_type)s"
         values["employment_type"] = employment_type
@@ -127,10 +140,10 @@ def get_data(company, cfg, employment_type=None):
             COUNT(e.name)                                AS cnt
         FROM `tabEmployee` e
         WHERE e.company = %(company)s
-          AND e.status != 'Left'
+          AND ({status_clause})
           {conditions}
         GROUP BY e.department, e.custom_sub_department, e.location
-        """.format(conditions=conditions),
+        """.format(conditions=conditions, status_clause=status_clause),
         values,
         as_dict=True,
     )
