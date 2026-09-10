@@ -127,6 +127,9 @@ doc_events = {
 	"Salary Structure Assignment": {
 		"on_submit": "tripod_hr.events.ctc_automation.ssa_on_submit",
 		"on_cancel": "tripod_hr.events.ctc_automation.ssa_on_cancel"
+	},
+	"Leave Application": {
+		"validate": "tripod_hr.tripod_hr.doctype.leave_blackout.leave_blackout.validate_leave_blackout"
 	}
 }
 
