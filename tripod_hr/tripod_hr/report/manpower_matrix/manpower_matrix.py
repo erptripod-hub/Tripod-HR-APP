@@ -13,6 +13,7 @@ TM_CONFIG = {
     "locations": [
         "DXB Factory",
         "DXB Office",
+        "WYNN Site",
         "DXB - Logistics",
         "DXB Staff on Leave",
         "KSA (DXB Visa)",
@@ -23,6 +24,7 @@ TM_CONFIG = {
     "labels": {
         "DXB Factory": "Factory",
         "DXB Office": "Office",
+        "WYNN Site": "WYNN",
         "DXB - Logistics": "Logistics",
         "DXB Staff on Leave": "On Leave",
         "KSA (DXB Visa)": "KSA",
@@ -33,6 +35,7 @@ TM_CONFIG = {
     "keys": {
         "DXB Factory": "dxb",
         "DXB Office": "dxb_office",
+        "WYNN Site": "wynn",
         "DXB - Logistics": "dxb_logistics",
         "DXB Staff on Leave": "dxb_leave",
         "KSA (DXB Visa)": "ksa",
@@ -47,8 +50,8 @@ TM_CONFIG = {
     # they stay visible on the Tripod Media matrix by design.
     "keep_inactive_at": "Luxxe (TM Visa)",
     "dept_order": {"ADMIN": 1, "Fitout - TM": 2, "Logistics - TM": 3, "Production  - TM": 4},
-    "chart_labels": ["Factory", "Office", "Logistics", "On Leave", "KSA", "Luxxe", "Cancel", "Admin/Home"],
-    "chart_colors": ["#378ADD", "#6BA3E5", "#85B7EB", "#888780", "#1D9E75", "#534AB7", "#B4B2A9", "#888780"],
+    "chart_labels": ["Factory", "Office", "WYNN", "Logistics", "On Leave", "KSA", "Luxxe", "Cancel", "Admin/Home"],
+    "chart_colors": ["#378ADD", "#6BA3E5", "#C77B3A", "#85B7EB", "#888780", "#1D9E75", "#534AB7", "#B4B2A9", "#888780"],
     "summary": [
         ("total", "Total Manpower", "Blue"),
         ("dxb", "In Factory", "Blue"),
