@@ -71,6 +71,7 @@
   "pending_salary_last_month",
   "column_break_pend",
   "air_ticket_allowance",
+  "other_dues",
   "override_salary_payable",
   "salary_payable",
   "section_recovery",
@@ -373,8 +374,8 @@
    "fieldname": "leave_calculation_basis",
    "fieldtype": "Select",
    "label": "Leave Calculation Basis",
-   "options": "Full Month Salary (End of Contract)\nBasic Salary Only (Resignation/Termination)",
-   "description": "Auto-set from Exit Status: End of Contract = Full Month, others = Basic Only"
+   "options": "End of Contract\nBasic Salary Only (Resignation/Termination)",
+   "description": "End of Contract = manual entry (HR enters daily rate & payable). Basic Salary Only = auto-calc Basic \u00f7 30"
   },
   {
    "fieldname": "leaves_accrued",
@@ -481,7 +482,7 @@
    "label": "Current Month Payment",
    "read_only": 0,
    "options": "Company:company:default_currency",
-   "description": "Auto-calculated: (Gross Pay / 30) × Days Worked"
+   "description": "Auto-calculated: (Gross Pay / 30) \u00d7 Days Worked"
   },
   {
    "fieldname": "unpaid_leaves_taken",
@@ -505,6 +506,13 @@
    "fieldtype": "Currency",
    "label": "Air Ticket Allowance",
    "options": "AED"
+  },
+  {
+   "fieldname": "other_dues",
+   "fieldtype": "Currency",
+   "label": "Other Dues",
+   "options": "AED",
+   "description": "Any other payments due"
   },
   {
    "fieldname": "override_salary_payable",

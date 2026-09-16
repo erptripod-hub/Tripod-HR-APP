@@ -149,6 +149,7 @@ frappe.ui.form.on('UAE EOS Calculation', {
     days_worked_pending: function(frm) { frm.trigger('calc_pending_salary'); frm.trigger('calc_summary'); },
     unpaid_leaves_taken: function(frm) { frm.trigger('calc_service_period'); frm.trigger('calc_pending_salary'); frm.trigger('calc_summary'); },
     air_ticket_allowance: function(frm) { frm.trigger('calc_pending_salary'); frm.trigger('calc_summary'); },
+    other_dues: function(frm) { frm.trigger('calc_pending_salary'); frm.trigger('calc_summary'); },
     override_salary_payable: function(frm) { frm.trigger('calc_pending_salary'); frm.trigger('calc_summary'); },
     visa_labour_card_expense: function(frm) { frm.trigger('calc_recovery'); frm.trigger('calc_summary'); },
     loan_advance_recovery: function(frm) { frm.trigger('calc_recovery'); frm.trigger('calc_summary'); },
@@ -159,8 +160,11 @@ frappe.ui.form.on('UAE EOS Calculation', {
     // Calculation triggers
     // ------------------------------------------------------------------
     set_leave_basis: function(frm) {
+        // Only set default on NEW record when basis is empty
+        // Never overwrite HR's manual selection
+        if (!frm.is_new() || frm.doc.leave_calculation_basis) return;
         if (frm.doc.exit_status === 'End of Contract') {
-            frm.set_value('leave_calculation_basis', 'Full Month Salary (End of Contract)');
+            frm.set_value('leave_calculation_basis', 'End of Contract');
         } else if (frm.doc.exit_status) {
             frm.set_value('leave_calculation_basis', 'Basic Salary Only (Resignation/Termination)');
         }
@@ -257,12 +261,11 @@ frappe.ui.form.on('UAE EOS Calculation', {
     },
 
     calc_leave: function(frm) {
-        let daily = 0;
-        if (frm.doc.leave_calculation_basis === 'Full Month Salary (End of Contract)') {
-            daily = flt(frm.doc.gross_pay_per_month) / 30;
-        } else {
-            daily = flt(frm.doc.basic_salary) / 30;
-        }
+        // End of Contract = manual entry only, don't touch daily rate or payable
+        if (frm.doc.leave_calculation_basis === 'End of Contract') return;
+
+        // Basic Salary Only = auto-calc with Basic ÷ 30
+        const daily = flt(frm.doc.basic_salary) / 30;
         frm.set_value('leave_daily_rate', flt(daily, 2));
 
         if (frm.doc.override_leave || frm.doc.calculation_mode === 'Manual') return;
@@ -300,7 +303,7 @@ frappe.ui.form.on('UAE EOS Calculation', {
         // pending_salary_last_month is MANUAL entry - don't auto-calculate
 
         if (frm.doc.override_salary_payable) return;
-        const total = flt(current, 2) + flt(frm.doc.pending_salary_last_month) + flt(frm.doc.air_ticket_allowance);
+        const total = flt(current, 2) + flt(frm.doc.pending_salary_last_month) + flt(frm.doc.air_ticket_allowance) + flt(frm.doc.other_dues);
         frm.set_value('salary_payable', flt(total, 2));
     },
 

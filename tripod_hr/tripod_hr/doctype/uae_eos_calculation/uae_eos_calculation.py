@@ -62,11 +62,15 @@ class UAEEOSCalculation(Document):
 	# Auto-set leave basis from exit status
 	# ------------------------------------------------------------------
 	def set_leave_basis_from_exit_status(self):
-		"""Auto-set leave calculation basis from exit status if not already set."""
+		"""Auto-set leave calculation basis ONLY on first save (new records).
+		After that, respect whatever HR selected manually — don't overwrite."""
 		if not self.exit_status:
 			return
+		# Only set default on new record when basis is empty
+		if not self.is_new() or self.leave_calculation_basis:
+			return
 		if self.exit_status == "End of Contract":
-			self.leave_calculation_basis = "Full Month Salary (End of Contract)"
+			self.leave_calculation_basis = "End of Contract"
 		else:
 			# Resignation, Termination, etc. = Basic only
 			self.leave_calculation_basis = "Basic Salary Only (Resignation/Termination)"
@@ -170,13 +174,13 @@ class UAEEOSCalculation(Document):
 	# Leave Salary
 	# ------------------------------------------------------------------
 	def calculate_leave_salary(self):
-		# Compute daily rate based on basis
-		if self.leave_calculation_basis == "Full Month Salary (End of Contract)":
-			daily = flt(self.gross_pay_per_month) / 30 if self.gross_pay_per_month else 0
-		else:
-			# Basic Salary Only or unset → default Basic
-			daily = flt(self.basic_salary) / 30 if self.basic_salary else 0
+		# End of Contract basis = NO auto-calculation. HR enters values manually.
+		if self.leave_calculation_basis == "End of Contract":
+			# Don't touch leave_daily_rate or leave_salary_payable - HR controls both
+			return
 
+		# Basic Salary Only basis = auto-calc with Basic ÷ 30
+		daily = flt(self.basic_salary) / 30 if self.basic_salary else 0
 		self.leave_daily_rate = flt(daily, 2)
 
 		# Auto leave balance if not given
@@ -239,7 +243,7 @@ class UAEEOSCalculation(Document):
 			return
 
 		self.salary_payable = flt(
-			flt(self.current_month_payment) + flt(self.pending_salary_last_month) + flt(self.air_ticket_allowance), 2
+			flt(self.current_month_payment) + flt(self.pending_salary_last_month) + flt(self.air_ticket_allowance) + flt(self.other_dues), 2
 		)
 
 	# ------------------------------------------------------------------
