@@ -6,7 +6,7 @@ frappe.query_reports["Manpower Matrix"] = {
             "label": __("Company"),
             "fieldtype": "Link",
             "options": "Company",
-            "default": frappe.defaults.get_user_default("Company") || "Tripod Media FZ LLC",
+            "default": frappe.defaults.get_user_default("Company") || "Tripod Middle East FZ LLC",
             "reqd": 1
         },
         {

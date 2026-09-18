@@ -6,7 +6,7 @@
 import frappe
 from frappe import _
 
-TM_COMPANY = "Tripod Media FZ LLC"
+TM_COMPANY = "Tripod Middle East FZ LLC"
 TG_COMPANY = "TRIPOD GLOBAL SHOPFIT MANUFACTURING COMPANY"
 LAMEF_COMPANY = "Luxxe Atelier Middle East FZ-LLC"
 
