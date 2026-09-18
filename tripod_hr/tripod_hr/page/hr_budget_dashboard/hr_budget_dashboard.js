@@ -10,8 +10,8 @@ frappe.pages['hr-budget-dashboard'].on_page_load = function (wrapper) {
 		label: 'Company',
 		fieldtype: 'Select',
 		options: [
-			{ label: 'All (Tripod Media + Global)', value: 'All' },
-			{ label: 'Tripod Media', value: 'Tripod Media FZ LLC' },
+			{ label: 'All (Tripod Middle East + Global)', value: 'All' },
+			{ label: 'Tripod Middle East', value: 'Tripod Middle East FZ LLC' },
 			{ label: 'Tripod Global', value: 'TRIPOD GLOBAL SHOPFIT MANUFACTURING COMPANY' }
 		],
 		default: 'All',

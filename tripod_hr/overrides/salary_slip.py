@@ -5,7 +5,7 @@ from hrms.payroll.doctype.salary_slip.salary_slip import SalarySlip
 ALLOWED_COMPANIES = [
     "TRIPOD GLOBAL SHOPFIT MANUFACTURING COMPANY",
     "Sanctuaire Exotique Interior Decoration LLC",
-    "Tripod Media FZ LLC",
+    "Tripod Middle East FZ LLC",
 ]
 
 ACTUAL_COMPONENTS = [
