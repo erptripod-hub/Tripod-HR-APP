@@ -82,6 +82,7 @@ after_migrate = [
     "tripod_hr.tripod_hr.ctc_management.install_transfer_fields.install",
     "tripod_hr.tripod_hr.ctc_management.install_job_opening_link.install",
     "tripod_hr.tripod_hr.ctc_management.install_job_applicant_fields.install",
+    "tripod_hr.tripod_hr.ctc_management.install_hiring_plan_link.install",
     "tripod_hr.registry.migration.diff_after_migrate"
 ]
 
@@ -123,6 +124,10 @@ override_doctype_class = {
 # Hook on document methods and events
 
 doc_events = {
+	"Job Opening": {
+		"after_insert": "tripod_hr.events.hiring_plan_sync.job_opening_after_insert",
+		"on_update": "tripod_hr.events.hiring_plan_sync.job_opening_on_update"
+	},
 	"Employee": {
 		"validate": "tripod_hr.tripod_hr.ctc_management.transfer_sync.apply_latest_transfer",
 		"before_save": "tripod_hr.events.ctc_automation.employee_before_save"
