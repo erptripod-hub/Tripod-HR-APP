@@ -81,6 +81,7 @@ after_migrate = [
     "tripod_hr.tripod_hr.ctc_management.install_budget_dashboard.after_migrate",
     "tripod_hr.tripod_hr.ctc_management.install_transfer_fields.install",
     "tripod_hr.tripod_hr.ctc_management.install_job_opening_link.install",
+    "tripod_hr.tripod_hr.ctc_management.install_job_applicant_fields.install",
     "tripod_hr.registry.migration.diff_after_migrate"
 ]
 

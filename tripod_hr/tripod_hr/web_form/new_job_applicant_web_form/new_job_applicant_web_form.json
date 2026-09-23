@@ -27,12 +27,69 @@
  "success_url": "/new-job-application",
  "title": "New Job Applicant Web Form",
  "web_form_fields": [
-  {"fieldname": "job_title", "fieldtype": "Link", "label": "Job Opening", "options": "Job Opening", "reqd": 0},
-  {"fieldname": "applicant_name", "fieldtype": "Data", "label": "Full Name", "reqd": 1},
-  {"fieldname": "email_id", "fieldtype": "Data", "label": "Email Address", "options": "Email", "reqd": 1},
-  {"fieldname": "phone_number", "fieldtype": "Data", "label": "Phone Number", "options": "Phone", "reqd": 1},
-  {"fieldname": "country", "fieldtype": "Link", "label": "Nationality", "options": "Country", "reqd": 0},
-  {"fieldname": "cover_letter", "fieldtype": "Text", "label": "Cover Letter", "reqd": 0},
-  {"fieldname": "resume_attachment", "fieldtype": "Attach", "label": "CV / Resume", "reqd": 1}
+  {
+   "fieldname": "job_title",
+   "fieldtype": "Link",
+   "label": "Job Opening",
+   "options": "Job Opening",
+   "reqd": 0
+  },
+  {
+   "fieldname": "applicant_name",
+   "fieldtype": "Data",
+   "label": "Full Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "email_id",
+   "fieldtype": "Data",
+   "label": "Email Address",
+   "options": "Email",
+   "reqd": 1
+  },
+  {
+   "fieldname": "phone_number",
+   "fieldtype": "Data",
+   "label": "Phone Number",
+   "options": "Phone",
+   "reqd": 1
+  },
+  {
+   "fieldname": "country",
+   "fieldtype": "Link",
+   "label": "Nationality",
+   "options": "Country",
+   "reqd": 0
+  },
+  {
+   "fieldname": "custom_years_experience",
+   "fieldtype": "Int",
+   "label": "Years of Experience (same field)",
+   "reqd": 0
+  },
+  {
+   "fieldname": "custom_notice_period",
+   "fieldtype": "Data",
+   "label": "Notice Period",
+   "reqd": 0
+  },
+  {
+   "fieldname": "custom_expected_salary",
+   "fieldtype": "Currency",
+   "label": "Expected Salary (Monthly)",
+   "reqd": 0
+  },
+  {
+   "fieldname": "cover_letter",
+   "fieldtype": "Text",
+   "label": "Cover Letter",
+   "reqd": 0
+  },
+  {
+   "fieldname": "resume_attachment",
+   "fieldtype": "Attach",
+   "label": "CV / Resume",
+   "reqd": 1
+  }
  ]
 }
