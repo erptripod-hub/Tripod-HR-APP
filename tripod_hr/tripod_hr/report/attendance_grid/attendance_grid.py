@@ -50,6 +50,10 @@ def execute(filters=None):
         e = emp.setdefault(r["employee"], {"name": r["employee_name"], "days": {}})
         e["days"][str(r["attendance_date"])] = _code(r)
 
+    # fill weekly-offs (WO) and public holidays (H) from each employee's holiday list,
+    # without overriding a real attendance mark
+    _apply_holidays(emp, filters, from_date, to_date)
+
     columns = _columns(days)
     data = _rows(emp, days)
     return columns, data
@@ -135,3 +139,42 @@ def _rows(emp, days):
         row["t_worked"] = p
         out.append(row)
     return out
+
+
+def _company_default_holiday_list(company):
+    if not company:
+        return None
+    return frappe.db.get_value("Company", company, "default_holiday_list")
+
+
+def _apply_holidays(emp, filters, from_date, to_date):
+    default_hl = _company_default_holiday_list(filters.get("company"))
+    hl_cache = {}
+
+    for e_id, info in emp.items():
+        hl = frappe.db.get_value("Employee", e_id, "holiday_list") or default_hl
+        if not hl:
+            continue
+        if hl not in hl_cache:
+            hl_cache[hl] = _holiday_map(hl, from_date, to_date)
+        for dstr, is_weekly in hl_cache[hl].items():
+            if dstr not in info["days"]:          # don't override real attendance
+                info["days"][dstr] = "WO" if is_weekly else "H"
+
+    # make sure employees with attendance but missing from emp holiday pass still get
+    # the loop above already covers all emp keys.
+
+
+def _holiday_map(holiday_list, from_date, to_date):
+    """{date_str: weekly_off_bool} for holidays in range."""
+    rows = frappe.db.sql(
+        """
+        SELECT holiday_date, weekly_off
+        FROM `tabHoliday`
+        WHERE parent = %(hl)s
+          AND holiday_date BETWEEN %(from_date)s AND %(to_date)s
+        """,
+        {"hl": holiday_list, "from_date": from_date, "to_date": to_date},
+        as_dict=True,
+    )
+    return {str(r["holiday_date"]): bool(r["weekly_off"]) for r in rows}
