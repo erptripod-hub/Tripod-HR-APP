@@ -46,7 +46,8 @@ frappe.query_reports["Attendance Grid"] = {
                 "AL": ["#E8F0FA", "#2A5C8A"],   // annual   - light blue
                 "SL": ["#FCF0DF", "#9A6B1E"],   // sick     - light orange
                 "L":  ["#EFEDE7", "#5A5A5A"],   // other lv - neutral
-                "H":  ["#EEECE6", "#8C8C8C"],   // holiday  - grey
+                "H":  ["#EEECE6", "#8C8C8C"],   // public holiday - grey
+                "WO": ["#F0EFEB", "#9A9A9A"],   // weekly off - light grey
                 "\u00bd": ["#FBF3DD", "#8A6B1E"] // half day - light gold
             };
             var s = styles[value];
