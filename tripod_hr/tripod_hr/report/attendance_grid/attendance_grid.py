@@ -60,7 +60,8 @@ def execute(filters=None):
 
 
 def _fetch(filters, from_date, to_date):
-    conds = ["a.docstatus < 2", "a.attendance_date BETWEEN %(from_date)s AND %(to_date)s"]
+    conds = ["a.docstatus < 2", "a.attendance_date BETWEEN %(from_date)s AND %(to_date)s",
+             "e.status = 'Active'"]
     vals = {"from_date": from_date, "to_date": to_date}
     if filters.get("company"):
         conds.append("a.company = %(company)s")
