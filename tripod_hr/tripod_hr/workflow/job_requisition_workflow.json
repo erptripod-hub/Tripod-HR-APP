@@ -1,0 +1,46 @@
+{
+ "actions": [],
+ "creation": "2026-11-07 09:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Workflow",
+ "document_type": "Job Requisition",
+ "is_active": 1,
+ "modified": "2026-11-07 09:00:00.000000",
+ "modified_by": "Administrator",
+ "name": "Job Requisition Workflow",
+ "override_status": 0,
+ "owner": "Administrator",
+ "send_email_alert": 1,
+ "workflow_state_field": "workflow_state",
+ "states": [
+  {"doc_status": "0", "state": "Open", "workflow_state_name": "Open", "allow_edit": "HR User"},
+  {"doc_status": "0", "state": "Pending GM Approval", "workflow_state_name": "Pending GM Approval", "allow_edit": "GM Approver"},
+  {"doc_status": "0", "state": "Pending Operations Director Approval", "workflow_state_name": "Pending Operations Director Approval", "allow_edit": "Operations Director Approver"},
+  {"doc_status": "0", "state": "Pending CPO Review & Approval", "workflow_state_name": "Pending CPO Review & Approval", "allow_edit": "CPO Approver"},
+  {"doc_status": "0", "state": "Pending CEO Approval", "workflow_state_name": "Pending CEO Approval", "allow_edit": "CEO Approver"},
+  {"doc_status": "1", "state": "Approved", "workflow_state_name": "Approved", "allow_edit": "HR Manager"},
+  {"doc_status": "0", "state": "Rejected", "workflow_state_name": "Rejected", "allow_edit": "HR User"}
+ ],
+ "transitions": [
+  {"action": "Submit for Approval", "state": "Open", "next_state": "Pending CPO Review & Approval", "allowed": "HR User", "allow_self_approval": 1,
+   "condition": "doc.department in ['HR - TM','Human Resources - TM','Finance - TM','HR - TDMFCL','Human Resources - TDMFCL','Accounts - TDMFCL']"},
+
+  {"action": "Submit for Approval", "state": "Open", "next_state": "Pending GM Approval", "allowed": "HR User", "allow_self_approval": 1,
+   "condition": "doc.company == 'Tripod Middle East FZ LLC' and doc.department not in ['HR - TM','Human Resources - TM','Finance - TM','HR - TDMFCL','Human Resources - TDMFCL','Accounts - TDMFCL']"},
+
+  {"action": "Submit for Approval", "state": "Open", "next_state": "Pending Operations Director Approval", "allowed": "HR User", "allow_self_approval": 1,
+   "condition": "doc.company == 'TRIPOD GLOBAL SHOPFIT MANUFACTURING COMPANY' and doc.department not in ['HR - TM','Human Resources - TM','Finance - TM','HR - TDMFCL','Human Resources - TDMFCL','Accounts - TDMFCL']"},
+
+  {"action": "Approve", "state": "Pending GM Approval", "next_state": "Pending CPO Review & Approval", "allowed": "GM Approver", "allow_self_approval": 1},
+  {"action": "Reject", "state": "Pending GM Approval", "next_state": "Rejected", "allowed": "GM Approver", "allow_self_approval": 1},
+
+  {"action": "Approve", "state": "Pending Operations Director Approval", "next_state": "Pending CPO Review & Approval", "allowed": "Operations Director Approver", "allow_self_approval": 1},
+  {"action": "Reject", "state": "Pending Operations Director Approval", "next_state": "Rejected", "allowed": "Operations Director Approver", "allow_self_approval": 1},
+
+  {"action": "Approve", "state": "Pending CPO Review & Approval", "next_state": "Pending CEO Approval", "allowed": "CPO Approver", "allow_self_approval": 1},
+  {"action": "Reject", "state": "Pending CPO Review & Approval", "next_state": "Rejected", "allowed": "CPO Approver", "allow_self_approval": 1},
+
+  {"action": "Approve", "state": "Pending CEO Approval", "next_state": "Approved", "allowed": "CEO Approver", "allow_self_approval": 1},
+  {"action": "Reject", "state": "Pending CEO Approval", "next_state": "Rejected", "allowed": "CEO Approver", "allow_self_approval": 1}
+ ]
+}
