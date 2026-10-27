@@ -49,6 +49,12 @@ def install():
 		{"fieldname": "custom_signature", "label": "Signature", "fieldtype": "Attach Image", "insert_after": "user_image",
 		 "description": "Transparent PNG. Printed on approval documents (e.g. EOS) when this user approves."},
 	]
+	fields["Company"] = [
+		{"fieldname": "custom_eos_accounts_section", "label": "End of Service Accounts", "fieldtype": "Section Break", "insert_after": "default_expense_account", "collapsible": 1},
+		{"fieldname": "custom_eos_expense_account", "label": "EOS Expense Account", "fieldtype": "Link", "options": "Account", "insert_after": "custom_eos_accounts_section"},
+		{"fieldname": "custom_eos_payable_account", "label": "EOS Payable Account", "fieldtype": "Link", "options": "Account", "insert_after": "custom_eos_expense_account",
+		 "description": "Liability ledger with Account Type = Payable. EOS is booked here per employee on Finance approval."},
+	]
 	fields["Journal Entry"] = [
 		{"fieldname": "custom_eos_doctype", "label": "EOS Type", "fieldtype": "Link", "options": "DocType", "allow_on_submit": 1, "insert_after": "user_remark"},
 		{"fieldname": "custom_eos_reference", "label": "End of Service", "fieldtype": "Dynamic Link", "options": "custom_eos_doctype", "allow_on_submit": 1, "insert_after": "custom_eos_doctype"},

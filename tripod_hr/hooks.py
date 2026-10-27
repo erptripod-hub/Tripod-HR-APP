@@ -145,10 +145,14 @@ doc_events = {
 		"validate": "tripod_hr.tripod_hr.doctype.leave_blackout.leave_blackout.validate_leave_blackout"
 	},
 	"UAE EOS Calculation": {
-		"validate": "tripod_hr.tripod_hr.eos_approval.events.eos_validate"
+		"validate": "tripod_hr.tripod_hr.eos_approval.events.eos_validate",
+		"on_submit": "tripod_hr.tripod_hr.eos_approval.events.eos_on_submit",
+		"on_cancel": "tripod_hr.tripod_hr.eos_approval.events.eos_on_cancel"
 	},
 	"KSA EOS Calculation": {
-		"validate": "tripod_hr.tripod_hr.eos_approval.events.eos_validate"
+		"validate": "tripod_hr.tripod_hr.eos_approval.events.eos_validate",
+		"on_submit": "tripod_hr.tripod_hr.eos_approval.events.eos_on_submit",
+		"on_cancel": "tripod_hr.tripod_hr.eos_approval.events.eos_on_cancel"
 	},
 	"Journal Entry": {
 		"validate": "tripod_hr.tripod_hr.eos_approval.events.je_validate",

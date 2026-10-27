@@ -3,7 +3,7 @@
 
 import frappe
 from frappe import _
-from frappe.utils import flt, now_datetime
+from frappe.utils import flt, now_datetime, nowdate
 
 EOS_DOCTYPES = ("UAE EOS Calculation", "KSA EOS Calculation")
 APPROVAL_FIELDS = (
@@ -35,6 +35,87 @@ def eos_validate(doc, method=None):
 	elif new_state in ("Draft", "Rejected", "Pending CPO Approval"):
 		for f in APPROVAL_FIELDS:
 			doc.set(f, None)
+
+
+# ----------------------------------------------------------------------
+# EOS: on Finance approval book the liability per employee (auto JV)
+#   Dr EOS Expense            (cost center of employee)
+#   Cr EOS Payable  Employee  (net payable)
+# Bank payment is then made by Finance against EOS Payable.
+# ----------------------------------------------------------------------
+def _eos_accounts(company):
+	expense, payable = frappe.db.get_value(
+		"Company", company, ["custom_eos_expense_account", "custom_eos_payable_account"]
+	) or (None, None)
+	if not expense or not payable:
+		frappe.throw(_("Set EOS Expense Account and EOS Payable Account on Company {0} (End of Service Accounts section).").format(company))
+	if frappe.db.get_value("Account", payable, "account_type") != "Payable":
+		frappe.throw(_("EOS Payable Account {0} must have Account Type = Payable.").format(payable))
+	return expense, payable
+
+
+def eos_on_submit(doc, method=None):
+	amount = flt(doc.net_payable, 2)
+	if amount <= 0:
+		frappe.db.set_value(doc.doctype, doc.name, "custom_payment_status", "Paid")
+		return
+
+	expense, payable = _eos_accounts(doc.company)
+	cost_center = (
+		frappe.db.get_value("Employee", doc.employee, "payroll_cost_center")
+		or frappe.get_cached_value("Company", doc.company, "cost_center")
+	)
+
+	je = frappe.get_doc({
+		"doctype": "Journal Entry",
+		"voucher_type": "Journal Entry",
+		"company": doc.company,
+		"posting_date": nowdate(),
+		"custom_eos_doctype": doc.doctype,
+		"custom_eos_reference": doc.name,
+		"user_remark": f"End of Service liability - {doc.employee} {doc.employee_name or ''} ({doc.name})",
+		"accounts": [
+			{"account": expense, "debit_in_account_currency": amount, "cost_center": cost_center},
+			{"account": payable, "party_type": "Employee", "party": doc.employee,
+			 "credit_in_account_currency": amount, "cost_center": cost_center},
+		],
+	})
+	je.flags.ignore_permissions = True
+	je.insert()
+	je.submit()
+	frappe.msgprint(_("EOS liability booked: {0}").format(frappe.utils.get_link_to_form("Journal Entry", je.name)))
+
+
+def eos_on_cancel(doc, method=None):
+	jes = frappe.get_all(
+		"Journal Entry",
+		filters={"custom_eos_doctype": doc.doctype, "custom_eos_reference": doc.name, "docstatus": 1},
+		pluck="name",
+	)
+	for name in jes:
+		if _bank_paid(name):
+			frappe.throw(_("Cancel the payment Journal Entry {0} first.").format(name))
+	for name in jes:
+		je = frappe.get_doc("Journal Entry", name)
+		je.flags.ignore_permissions = True
+		je.cancel()
+
+
+def _bank_paid(je_name):
+	return frappe.db.sql(
+		"""SELECT 1 FROM `tabJournal Entry Account` jea
+		JOIN `tabAccount` acc ON acc.name = jea.account
+		WHERE jea.parent = %s AND acc.account_type IN ('Bank', 'Cash') LIMIT 1""",
+		je_name,
+	)
+
+
+@frappe.whitelist()
+def get_payment_defaults(company):
+	return {
+		"payable_account": frappe.db.get_value("Company", company, "custom_eos_payable_account"),
+		"bank_account": frappe.db.get_value("Company", company, "default_bank_account"),
+	}
 
 
 # ----------------------------------------------------------------------
