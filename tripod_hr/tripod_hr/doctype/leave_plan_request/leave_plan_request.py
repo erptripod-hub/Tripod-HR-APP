@@ -254,7 +254,65 @@ def get_board_data(start, end, company=None, employment_type=None, department=No
 		as_dict=True,
 	)
 
-	return {"plans": plans}
+	employees = list(set([plan.employee for plan in plans]))
+	holidays, common_holidays = get_holiday_map(employees, start, end)
+
+	return {"plans": plans, "holidays": holidays, "common_holidays": common_holidays}
+
+
+def get_holiday_map(employees, start, end):
+	"""Per-employee holiday dates (weekends included, as they sit in the holiday
+	list) plus the dates that are holidays for every employee on the board."""
+	if not employees:
+		return {}, []
+
+	employee_lists = {}
+	company_defaults = {}
+
+	for row in frappe.get_all(
+		"Employee",
+		filters={"name": ["in", employees]},
+		fields=["name", "holiday_list", "company"],
+	):
+		holiday_list = row.holiday_list
+
+		if not holiday_list:
+			if row.company not in company_defaults:
+				company_defaults[row.company] = frappe.db.get_value(
+					"Company", row.company, "default_holiday_list"
+				)
+			holiday_list = company_defaults[row.company]
+
+		if holiday_list:
+			employee_lists[row.name] = holiday_list
+
+	unique_lists = list(set(employee_lists.values()))
+	if not unique_lists:
+		return {}, []
+
+	rows = frappe.get_all(
+		"Holiday",
+		filters={
+			"parent": ["in", unique_lists],
+			"holiday_date": ["between", [start, end]],
+		},
+		fields=["parent", "holiday_date"],
+	)
+
+	dates_by_list = {}
+	for row in rows:
+		dates_by_list.setdefault(row.parent, []).append(str(row.holiday_date))
+
+	holidays = {}
+	for employee, holiday_list in employee_lists.items():
+		holidays[employee] = dates_by_list.get(holiday_list, [])
+
+	common = None
+	for employee in employees:
+		employee_dates = set(holidays.get(employee, []))
+		common = employee_dates if common is None else common & employee_dates
+
+	return holidays, sorted(list(common or []))
 
 
 @frappe.whitelist()
