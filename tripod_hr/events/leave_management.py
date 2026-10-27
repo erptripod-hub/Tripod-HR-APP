@@ -340,3 +340,87 @@ def get_allocation_status(employee):
         })
     
     return result
+
+
+@frappe.whitelist()
+def update_leave_return_date(leave_application, new_to_date, reason):
+    """
+    Update return date for a Leave Application when worker doesn't return on time.
+    - Tracks original date, extension reason, who extended, when
+    - Allows negative balance (will be recovered when employee earns more)
+    """
+    try:
+        la = frappe.get_doc("Leave Application", leave_application)
+        
+        # Validate
+        if la.docstatus != 1:
+            return {"success": False, "message": _("Leave Application must be submitted")}
+        
+        new_to_date = getdate(new_to_date)
+        old_to_date = getdate(la.to_date)
+        
+        if new_to_date <= old_to_date:
+            return {"success": False, "message": _("New return date must be after current to date")}
+        
+        # Calculate extra days
+        from frappe.utils import date_diff
+        extra_days = date_diff(new_to_date, old_to_date)
+        old_total_days = la.total_leave_days
+        new_total_days = old_total_days + extra_days
+        
+        # Store original date if not already stored (first extension)
+        if not la.custom_original_to_date:
+            frappe.db.set_value("Leave Application", la.name, "custom_original_to_date", old_to_date, update_modified=False)
+        
+        # Update Leave Application
+        frappe.db.set_value("Leave Application", la.name, {
+            "to_date": new_to_date,
+            "total_leave_days": new_total_days,
+            "custom_extension_reason": reason,
+            "custom_extended_on": frappe.utils.now(),
+            "custom_extended_by": frappe.session.user
+        }, update_modified=True)
+        
+        # Update Leave Ledger Entry - add more negative days
+        # Find existing ledger entry for this leave application
+        existing_lle = frappe.db.get_value("Leave Ledger Entry", {
+            "transaction_name": la.name,
+            "transaction_type": "Leave Application",
+            "docstatus": 1
+        }, "name")
+        
+        if existing_lle:
+            # Update existing ledger entry
+            current_leaves = frappe.db.get_value("Leave Ledger Entry", existing_lle, "leaves")
+            new_leaves = current_leaves - extra_days  # More negative
+            frappe.db.set_value("Leave Ledger Entry", existing_lle, {
+                "leaves": new_leaves,
+                "to_date": new_to_date
+            })
+        else:
+            # Create additional ledger entry for extension
+            lle = frappe.get_doc({
+                "doctype": "Leave Ledger Entry",
+                "employee": la.employee,
+                "leave_type": la.leave_type,
+                "transaction_type": "Leave Application",
+                "transaction_name": la.name,
+                "leaves": -extra_days,
+                "from_date": old_to_date,
+                "to_date": new_to_date,
+                "is_carry_forward": 0,
+                "is_expired": 0,
+                "docstatus": 1
+            })
+            lle.db_insert()
+        
+        frappe.db.commit()
+        
+        return {
+            "success": True,
+            "message": _("Leave extended by {0} days. New total: {1} days").format(extra_days, new_total_days)
+        }
+        
+    except Exception as e:
+        frappe.log_error(f"Leave Extension Error for {leave_application}: {str(e)}")
+        return {"success": False, "message": str(e)}
