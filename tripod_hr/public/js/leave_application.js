@@ -1,21 +1,27 @@
 // Leave Application - Update Return Date Feature
 // For workers who don't return on time
 
+// Use custom event to avoid overriding ERPNext's default refresh
 frappe.ui.form.on("Leave Application", {
-    refresh: function(frm) {
-        // Show button only on submitted Leave Applications
-        if (frm.doc.docstatus === 1 && frm.doc.status === "Approved") {
-            frm.add_custom_button(__('Update Return Date'), function() {
-                show_update_return_date_dialog(frm);
-            }, __('Actions'));
-        }
-        
-        // Show extension history if exists
-        if (frm.doc.custom_original_to_date) {
-            frm.set_df_property('custom_extension_section', 'hidden', 0);
-        }
+    onload_post_render: function(frm) {
+        add_update_return_date_button(frm);
+    },
+    after_workflow_action: function(frm) {
+        add_update_return_date_button(frm);
     }
 });
+
+function add_update_return_date_button(frm) {
+    // Remove existing button if any
+    frm.remove_custom_button(__('Update Return Date'), __('Actions'));
+    
+    // Show button only on submitted & approved Leave Applications
+    if (frm.doc.docstatus === 1 && frm.doc.status === "Approved") {
+        frm.add_custom_button(__('Update Return Date'), function() {
+            show_update_return_date_dialog(frm);
+        }, __('Actions'));
+    }
+}
 
 function show_update_return_date_dialog(frm) {
     let d = new frappe.ui.Dialog({
