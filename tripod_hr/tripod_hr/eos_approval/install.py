@@ -96,7 +96,7 @@ def _ensure_workflow(dt):
 		"workflow_name": f"{dt} Approval",
 		"document_type": dt,
 		"is_active": 1,
-		"send_email_alert": 0,
+		"send_email_alert": 1,
 		"workflow_state_field": "workflow_state",
 		"states": [
 			{"state": "Draft", "doc_status": "0", "allow_edit": HR_ROLE},
