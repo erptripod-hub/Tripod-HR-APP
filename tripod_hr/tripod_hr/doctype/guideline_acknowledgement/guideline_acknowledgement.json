@@ -1,0 +1,89 @@
+{
+ "actions": [],
+ "autoname": "format:ACK-{guideline}-{employee}-{YYYY}",
+ "creation": "2026-10-27 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "employee", "employee_name", "company",
+  "column_break_1",
+  "guideline", "guideline_title", "acknowledged_on"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Employee",
+   "options": "Employee",
+   "in_list_view": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "label": "Employee Name",
+   "in_list_view": 1,
+   "fetch_from": "employee.employee_name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "in_list_view": 1,
+   "fetch_from": "employee.company",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "guideline",
+   "fieldtype": "Link",
+   "label": "Guideline",
+   "options": "Appointment Guideline",
+   "in_list_view": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "guideline_title",
+   "fieldtype": "Data",
+   "label": "Guideline Title",
+   "fetch_from": "guideline.title",
+   "read_only": 1
+  },
+  {
+   "fieldname": "acknowledged_on",
+   "fieldtype": "Datetime",
+   "label": "Acknowledged On",
+   "in_list_view": 1,
+   "read_only": 1
+  }
+ ],
+ "modified": "2026-10-27 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Tripod HR",
+ "name": "Guideline Acknowledgement",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1, "read": 1, "write": 1,
+   "role": "Employee Self Service"
+  },
+  {
+   "create": 1, "read": 1, "write": 1, "delete": 1,
+   "export": 1, "report": 1,
+   "role": "HR Manager"
+  },
+  {
+   "create": 1, "read": 1, "write": 1, "delete": 1,
+   "export": 1, "report": 1,
+   "role": "HR User"
+  }
+ ],
+ "sort_field": "acknowledged_on",
+ "sort_order": "DESC",
+ "track_changes": 0
+}
