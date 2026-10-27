@@ -3,29 +3,11 @@
 
 frappe.ui.form.on('UAE EOS Calculation', {
     refresh: function(frm) {
-        // Status indicator color
-        if (frm.doc.status === 'In Process') {
-            frm.page.set_indicator(__('In Process'), 'orange');
-        } else if (frm.doc.status === 'Cleared') {
-            frm.page.set_indicator(__('Cleared - Ready to Submit'), 'blue');
-        } else if (frm.doc.status === 'Completed') {
-            frm.page.set_indicator(__('Completed'), 'green');
-        } else if (frm.doc.status === 'Cancelled') {
-            frm.page.set_indicator(__('Cancelled'), 'red');
-        }
-
         // Recalculate button
         if (!frm.is_new()) {
             frm.add_custom_button(__('Recalculate All'), function() {
                 frm.trigger('recalculate_all');
             });
-        }
-
-        // Hide "Mark as Cleared" button if already cleared/submitted
-        if (frm.doc.status === 'Cleared' || frm.doc.docstatus === 1) {
-            frm.set_df_property('mark_as_cleared', 'hidden', 1);
-        } else {
-            frm.set_df_property('mark_as_cleared', 'hidden', 0);
         }
     },
 

@@ -25,13 +25,6 @@ class UAEEOSCalculation(Document):
 		self.calculate_summary()
 		self.set_default_status()
 
-	def before_submit(self):
-		"""Block submit unless status is Cleared."""
-		if self.status != "Cleared":
-			frappe.throw(
-				_("Cannot submit. Please click <b>Mark as Cleared</b> first to confirm all calculations are reviewed and final.")
-			)
-
 	def on_submit(self):
 		"""When submitted, mark as Completed."""
 		self.db_set("status", "Completed")

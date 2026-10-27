@@ -32,7 +32,9 @@ app_license = "MIT"
 doctype_js = {
     "Employee": "public/js/employee.js",
     "Job Opening": "public/js/job_opening.js",
-    "Leave Application": "public/js/leave_application.js"
+    "Leave Application": "public/js/leave_application.js",
+    "UAE EOS Calculation": "public/js/eos_approval.js",
+    "KSA EOS Calculation": "public/js/eos_approval.js"
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -85,6 +87,7 @@ after_migrate = [
     "tripod_hr.tripod_hr.ctc_management.install_job_applicant_fields.install",
     "tripod_hr.tripod_hr.ctc_management.install_hiring_plan_link.install",
     "tripod_hr.events.install_leave_extension_fields.install",
+    "tripod_hr.tripod_hr.eos_approval.install.install",
     "tripod_hr.registry.migration.diff_after_migrate"
 ]
 
@@ -140,6 +143,18 @@ doc_events = {
 	},
 	"Leave Application": {
 		"validate": "tripod_hr.tripod_hr.doctype.leave_blackout.leave_blackout.validate_leave_blackout"
+	},
+	"UAE EOS Calculation": {
+		"validate": "tripod_hr.tripod_hr.eos_approval.events.eos_validate"
+	},
+	"KSA EOS Calculation": {
+		"validate": "tripod_hr.tripod_hr.eos_approval.events.eos_validate"
+	},
+	"Journal Entry": {
+		"validate": "tripod_hr.tripod_hr.eos_approval.events.je_validate",
+		"on_submit": "tripod_hr.tripod_hr.eos_approval.events.je_sync_eos",
+		"on_cancel": "tripod_hr.tripod_hr.eos_approval.events.je_sync_eos",
+		"on_update_after_submit": "tripod_hr.tripod_hr.eos_approval.events.je_sync_eos"
 	}
 }
 

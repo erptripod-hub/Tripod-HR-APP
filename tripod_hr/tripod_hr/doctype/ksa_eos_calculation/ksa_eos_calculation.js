@@ -3,21 +3,6 @@
 
 frappe.ui.form.on('KSA EOS Calculation', {
     refresh: function(frm) {
-        // Mark as Cleared button
-        if (frm.doc.docstatus === 0 && frm.doc.status === 'In Process') {
-            frm.add_custom_button(__('Mark as Cleared'), function() {
-                frappe.call({
-                    method: 'tripod_hr.tripod_hr.doctype.ksa_eos_calculation.ksa_eos_calculation.mark_as_cleared',
-                    args: { docname: frm.doc.name },
-                    callback: function(r) {
-                        if (r.message) {
-                            frm.reload_doc();
-                        }
-                    }
-                });
-            }, __('Actions'));
-        }
-
         // Set currency for display
         frm.set_currency_labels(['gross_salary', 'daily_wage', 'gratuity_payable', 
             'leave_salary_payable', 'overtime_payable', 'salary_payable',
