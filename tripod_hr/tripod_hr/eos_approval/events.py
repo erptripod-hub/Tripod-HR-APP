@@ -6,6 +6,12 @@ from frappe import _
 from frappe.utils import flt, now_datetime, nowdate
 
 EOS_DOCTYPES = ("UAE EOS Calculation", "KSA EOS Calculation")
+# State names as configured in the UAE / KSA EOS workflows
+CPO_STATE = "Pending CPO Review & Approval"
+FINANCE_STATE = "Pending Finance Approval"
+APPROVED_STATE = "Approved"
+HR_STATES = ("Draft", "HR Review", "Rejected")
+
 APPROVAL_FIELDS = (
 	"custom_cpo_approved_by", "custom_cpo_approved_on",
 	"custom_finance_approved_by", "custom_finance_approved_on",
@@ -22,19 +28,44 @@ def eos_validate(doc, method=None):
 	if not new_state or new_state == old_state:
 		return
 
+	# Leaving HR's hands: every checklist item must be answered
+	if new_state not in HR_STATES:
+		_validate_checklist(doc)
+
 	user, now = frappe.session.user, now_datetime()
 
-	if new_state == "Pending Finance Approval":
+	if new_state == FINANCE_STATE:
 		doc.custom_cpo_approved_by = user
 		doc.custom_cpo_approved_on = now
-	elif new_state == "Approved":
+	elif new_state == APPROVED_STATE:
 		doc.custom_finance_approved_by = user
 		doc.custom_finance_approved_on = now
 		if not doc.get("custom_payment_status"):
 			doc.custom_payment_status = "Unpaid"
-	elif new_state in ("Draft", "Rejected", "Pending CPO Approval"):
+	elif new_state in HR_STATES or new_state == CPO_STATE:
 		for f in APPROVAL_FIELDS:
 			doc.set(f, None)
+
+
+def eos_before_validate(doc, method=None):
+	"""New EOS gets the checklist items from EOS Checklist Settings."""
+	if doc.docstatus == 0 and not doc.get("custom_exit_checklist"):
+		for item in get_checklist_items():
+			doc.append("custom_exit_checklist", {"checklist_item": item})
+
+
+def _validate_checklist(doc):
+	missing = [d.checklist_item for d in doc.get("custom_exit_checklist") or [] if not d.answer]
+	if missing:
+		frappe.throw(
+			_("Answer all Exit Checklist items before Submit for Approval:") + "<br>• " + "<br>• ".join(missing),
+			title=_("Exit Checklist Incomplete"),
+		)
+
+
+@frappe.whitelist()
+def get_checklist_items():
+	return [d.checklist_item for d in frappe.get_single("EOS Checklist Settings").items]
 
 
 # ----------------------------------------------------------------------

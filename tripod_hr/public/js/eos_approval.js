@@ -3,13 +3,23 @@
 	const PAY_COLORS = { 'Unpaid': 'red', 'Partly Paid': 'orange', 'Paid': 'green' };
 
 	const handlers = {
+		onload(frm) {
+			// New EOS: show the exit checklist straight away
+			if (!frm.is_new() || (frm.doc.custom_exit_checklist || []).length) return;
+			frappe.call('tripod_hr.tripod_hr.eos_approval.events.get_checklist_items').then((r) => {
+				(r.message || []).forEach((item) => {
+					frm.add_child('custom_exit_checklist', { checklist_item: item });
+				});
+				frm.refresh_field('custom_exit_checklist');
+			});
+		},
 		refresh(frm) {
 			const status = frm.doc.custom_payment_status;
 			if (frm.doc.docstatus === 1 && status) {
 				frm.dashboard.add_indicator(__('Payment: {0}', [__(status)]), PAY_COLORS[status] || 'gray');
 			}
 
-			const can_pay = frappe.user.has_role('Accounts Manager') || frappe.user.has_role('Accounts User');
+			const can_pay = ['Finance Approval', 'Accounts Manager', 'Accounts User'].some((r) => frappe.user.has_role(r));
 			if (frm.doc.docstatus !== 1 || status === 'Paid' || !can_pay) return;
 
 			frm.add_custom_button(__('Bank Entry'), () => {

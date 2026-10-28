@@ -12,23 +12,37 @@ from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 
 EOS_DOCTYPES = ("UAE EOS Calculation", "KSA EOS Calculation")
 
-HR_ROLE = "HR User"
+HR_ROLE = "EOS Creator"
 CPO_ROLE = "CPO Approver"
-FINANCE_ROLE = "Accounts Manager"
+FINANCE_ROLE = "Finance Approval"
 
 STATES = [
 	("Draft", "Warning"),
-	("Pending CPO Approval", "Warning"),
+	("Pending CPO Review & Approval", "Warning"),
 	("Pending Finance Approval", "Primary"),
 	("Approved", "Success"),
+	("HR Review", "Warning"),
 	("Rejected", "Danger"),
 	("Cancelled", "Danger"),
 ]
-ACTIONS = ["Send for Approval", "Approve", "Reject", "Cancel"]
+ACTIONS = ["Submit for Approval", "Approve", "Reject", "Cancel"]
+
+
+DEFAULT_CHECKLIST = [
+	"Laptop / desktop and charger returned",
+	"Email disabled and forwarding set",
+	"ERPNext and system access removed",
+	"Accommodation vacated and keys returned",
+	"Handover of work and files done",
+	"Loans and advances cleared",
+]
 
 
 def _eos_fields():
 	return [
+		{"fieldname": "custom_exit_checklist_section", "label": "Exit Checklist", "fieldtype": "Section Break", "insert_after": "payment_date"},
+		{"fieldname": "custom_exit_checklist", "label": "Exit Checklist", "fieldtype": "Table", "options": "EOS Exit Checklist Item", "insert_after": "custom_exit_checklist_section",
+		 "description": "Answer every item (Yes / No / Not Applicable) before Submit for Approval."},
 		{"fieldname": "custom_approval_section", "label": "Approvals", "fieldtype": "Section Break", "insert_after": "cleared_on"},
 		{"fieldname": "custom_cpo_approved_by", "label": "CPO Approved By", "fieldtype": "Link", "options": "User", "read_only": 1, "insert_after": "custom_approval_section"},
 		{"fieldname": "custom_cpo_approved_on", "label": "CPO Approved On", "fieldtype": "Datetime", "read_only": 1, "insert_after": "custom_cpo_approved_by"},
@@ -69,13 +83,15 @@ def install():
 		)
 
 	_ensure_masters()
+	_ensure_checklist_settings()
 	for dt in EOS_DOCTYPES:
 		_ensure_workflow(dt)
-		# Submitted EOS without any payment status start as Unpaid
+		# EOS submitted before this setup were paid outside the system
 		frappe.db.sql(
-			f"""UPDATE `tab{dt}` SET custom_payment_status = 'Unpaid'
+			f"""UPDATE `tab{dt}` SET custom_payment_status = 'Paid'
 			WHERE docstatus = 1 AND IFNULL(custom_payment_status, '') = ''"""
 		)
+		_fill_draft_checklists(dt)
 	frappe.db.commit()
 
 
@@ -106,19 +122,49 @@ def _ensure_workflow(dt):
 		"workflow_state_field": "workflow_state",
 		"states": [
 			{"state": "Draft", "doc_status": "0", "allow_edit": HR_ROLE},
-			{"state": "Pending CPO Approval", "doc_status": "0", "allow_edit": CPO_ROLE},
+			{"state": "Pending CPO Review & Approval", "doc_status": "0", "allow_edit": CPO_ROLE},
 			{"state": "Pending Finance Approval", "doc_status": "0", "allow_edit": FINANCE_ROLE},
 			{"state": "Approved", "doc_status": "1", "allow_edit": FINANCE_ROLE},
-			{"state": "Rejected", "doc_status": "0", "allow_edit": HR_ROLE},
+			{"state": "HR Review", "doc_status": "0", "allow_edit": HR_ROLE},
 			{"state": "Cancelled", "doc_status": "2", "allow_edit": FINANCE_ROLE},
 		],
 		"transitions": [
-			tr("Draft", "Send for Approval", "Pending CPO Approval", HR_ROLE),
-			tr("Rejected", "Send for Approval", "Pending CPO Approval", HR_ROLE),
-			tr("Pending CPO Approval", "Approve", "Pending Finance Approval", CPO_ROLE),
-			tr("Pending CPO Approval", "Reject", "Rejected", CPO_ROLE),
+			tr("Draft", "Submit for Approval", "Pending CPO Review & Approval", HR_ROLE),
+			tr("HR Review", "Submit for Approval", "Pending CPO Review & Approval", HR_ROLE),
+			tr("Pending CPO Review & Approval", "Approve", "Pending Finance Approval", CPO_ROLE),
+			tr("Pending CPO Review & Approval", "Reject", "HR Review", CPO_ROLE),
 			tr("Pending Finance Approval", "Approve", "Approved", FINANCE_ROLE),
-			tr("Pending Finance Approval", "Reject", "Rejected", FINANCE_ROLE),
+			tr("Pending Finance Approval", "Reject", "HR Review", FINANCE_ROLE),
 			tr("Approved", "Cancel", "Cancelled", FINANCE_ROLE),
 		],
 	}).insert(ignore_permissions=True)
+
+
+def _ensure_checklist_settings():
+	settings = frappe.get_single("EOS Checklist Settings")
+	if settings.get("items"):
+		return
+	for item in DEFAULT_CHECKLIST:
+		settings.append("items", {"checklist_item": item})
+	settings.flags.ignore_permissions = True
+	settings.save()
+
+
+def _fill_draft_checklists(dt):
+	"""Add the checklist rows (blank answers) to drafts that have none yet."""
+	items = [d.checklist_item for d in frappe.get_single("EOS Checklist Settings").items]
+	if not items:
+		return
+	drafts = frappe.db.sql_list(
+		f"""SELECT name FROM `tab{dt}` p WHERE docstatus = 0 AND NOT EXISTS (
+			SELECT 1 FROM `tabEOS Exit Checklist Item` c
+			WHERE c.parent = p.name AND c.parenttype = %s)""",
+		dt,
+	)
+	for name in drafts:
+		for idx, item in enumerate(items, start=1):
+			frappe.get_doc({
+				"doctype": "EOS Exit Checklist Item",
+				"parent": name, "parenttype": dt, "parentfield": "custom_exit_checklist",
+				"idx": idx, "checklist_item": item,
+			}).db_insert()

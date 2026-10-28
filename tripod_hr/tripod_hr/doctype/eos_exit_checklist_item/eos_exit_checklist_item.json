@@ -1,0 +1,49 @@
+{
+ "actions": [],
+ "creation": "2026-10-27 15:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "checklist_item",
+  "answer",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "checklist_item",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Checklist Item",
+   "read_only": 1,
+   "columns": 5
+  },
+  {
+   "fieldname": "answer",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Answer",
+   "options": "\nYes\nNo\nNot Applicable",
+   "columns": 2
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Remarks",
+   "columns": 3
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-10-27 15:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Tripod HR",
+ "name": "EOS Exit Checklist Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "istable": 1
+}
