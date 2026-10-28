@@ -23,33 +23,13 @@
 			if (frm.doc.docstatus !== 1 || status === 'Paid' || !can_pay) return;
 
 			frm.add_custom_button(__('Bank Entry'), () => {
-				const remaining = flt(frm.doc.net_payable) - flt(frm.doc.custom_paid_amount);
 				frappe.call({
-					method: 'tripod_hr.tripod_hr.eos_approval.events.get_payment_defaults',
-					args: { company: frm.doc.company },
+					method: 'tripod_hr.tripod_hr.eos_approval.events.make_eos_bank_entry',
+					args: { eos_doctype: frm.doctype, eos_name: frm.doc.name },
 				}).then((r) => {
-					const acc = r.message || {};
-					frappe.model.with_doctype('Journal Entry', () => {
-						const je = frappe.model.get_new_doc('Journal Entry');
-						je.voucher_type = 'Bank Entry';
-						je.company = frm.doc.company;
-						je.posting_date = frappe.datetime.get_today();
-						je.custom_eos_doctype = frm.doctype;
-						je.custom_eos_reference = frm.doc.name;
-						je.user_remark = `End of Service payment - ${frm.doc.employee} ${frm.doc.employee_name || ''} (${frm.doc.name})`;
-
-						const dr = frappe.model.add_child(je, 'accounts');
-						dr.account = acc.payable_account;
-						dr.party_type = 'Employee';
-						dr.party = frm.doc.employee;
-						dr.debit_in_account_currency = remaining;
-
-						const cr = frappe.model.add_child(je, 'accounts');
-						cr.account = acc.bank_account;
-						cr.credit_in_account_currency = remaining;
-
-						frappe.set_route('Form', 'Journal Entry', je.name);
-					});
+					if (!r.message) return;
+					const doc = frappe.model.sync(r.message)[0];
+					frappe.set_route('Form', doc.doctype, doc.name);
 				});
 			}, __('Create'));
 		},

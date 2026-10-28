@@ -34,7 +34,8 @@ doctype_js = {
     "Job Opening": "public/js/job_opening.js",
     "Leave Application": "public/js/leave_application.js",
     "UAE EOS Calculation": "public/js/eos_approval.js",
-    "KSA EOS Calculation": "public/js/eos_approval.js"
+    "KSA EOS Calculation": "public/js/eos_approval.js",
+    "Journal Entry": "public/js/eos_journal_entry.js"
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}

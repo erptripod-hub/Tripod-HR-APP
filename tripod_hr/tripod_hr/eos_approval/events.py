@@ -112,24 +112,27 @@ def eos_on_submit(doc, method=None):
 		],
 	})
 	je.flags.ignore_permissions = True
-	je.insert()
-	je.submit()
-	frappe.msgprint(_("EOS liability booked: {0}").format(frappe.utils.get_link_to_form("Journal Entry", je.name)))
+	je.insert()  # left as Draft: payable team reviews and submits it
+	frappe.msgprint(_("EOS liability Journal Entry {0} created as Draft for the payable team.").format(
+		frappe.utils.get_link_to_form("Journal Entry", je.name)))
 
 
 def eos_on_cancel(doc, method=None):
 	jes = frappe.get_all(
 		"Journal Entry",
-		filters={"custom_eos_doctype": doc.doctype, "custom_eos_reference": doc.name, "docstatus": 1},
-		pluck="name",
+		filters={"custom_eos_doctype": doc.doctype, "custom_eos_reference": doc.name, "docstatus": ["<", 2]},
+		fields=["name", "docstatus"],
 	)
-	for name in jes:
-		if _bank_paid(name):
-			frappe.throw(_("Cancel the payment Journal Entry {0} first.").format(name))
-	for name in jes:
-		je = frappe.get_doc("Journal Entry", name)
-		je.flags.ignore_permissions = True
-		je.cancel()
+	for je in jes:
+		if je.docstatus == 1 and _bank_paid(je.name):
+			frappe.throw(_("Cancel the payment Journal Entry {0} first.").format(je.name))
+	for je in jes:
+		if je.docstatus == 0:
+			frappe.delete_doc("Journal Entry", je.name, ignore_permissions=True)
+		else:
+			d = frappe.get_doc("Journal Entry", je.name)
+			d.flags.ignore_permissions = True
+			d.cancel()
 
 
 def _bank_paid(je_name):
@@ -141,18 +144,77 @@ def _bank_paid(je_name):
 	)
 
 
+def _liability_jv(dt, name):
+	"""Submitted liability JV of an EOS (the one without bank / cash rows)."""
+	for je in frappe.get_all(
+		"Journal Entry",
+		filters={"custom_eos_doctype": dt, "custom_eos_reference": name, "docstatus": 1},
+		pluck="name", order_by="creation asc",
+	):
+		if not _bank_paid(je):
+			return je
+
+
 @frappe.whitelist()
-def get_payment_defaults(company):
-	return {
-		"payable_account": frappe.db.get_value("Company", company, "custom_eos_payable_account"),
-		"bank_account": frappe.db.get_value("Company", company, "default_bank_account"),
-	}
+def make_eos_bank_entry(source_name=None, eos_doctype=None, eos_name=None):
+	"""Bank Entry against EOS Payable. Called from the liability JV (source_name)
+	or from the EOS form (eos_doctype + eos_name)."""
+	if eos_name:
+		source_name = _liability_jv(eos_doctype, eos_name)
+		if not source_name:
+			frappe.throw(_("The liability Journal Entry for {0} is not submitted yet. The payable team must submit it first.").format(eos_name))
+
+	jv = frappe.get_doc("Journal Entry", source_name)
+	dt, name = jv.get("custom_eos_doctype"), jv.get("custom_eos_reference")
+	if jv.docstatus != 1 or dt not in EOS_DOCTYPES or not name:
+		frappe.throw(_("Make Bank Entry works only on a submitted EOS liability Journal Entry."))
+
+	payable_row = next((r for r in jv.accounts if r.party_type == "Employee" and flt(r.credit_in_account_currency)), None)
+	if not payable_row:
+		frappe.throw(_("No EOS Payable (Employee) row found on {0}.").format(jv.name))
+
+	eos = frappe.db.get_value(dt, name, ["net_payable", "custom_paid_amount", "employee", "employee_name"], as_dict=True)
+	remaining = flt(eos.net_payable) - flt(eos.custom_paid_amount)
+	if remaining <= 0:
+		frappe.throw(_("{0} is already fully paid.").format(name))
+
+	be = frappe.new_doc("Journal Entry")
+	be.voucher_type = "Bank Entry"
+	be.company = jv.company
+	be.posting_date = nowdate()
+	be.custom_eos_doctype = dt
+	be.custom_eos_reference = name
+	be.user_remark = f"End of Service payment - {eos.employee} {eos.employee_name or ''} ({name})"
+	be.append("accounts", {
+		"account": payable_row.account,
+		"party_type": "Employee",
+		"party": payable_row.party,
+		"debit_in_account_currency": remaining,
+		"reference_type": "Journal Entry",
+		"reference_name": jv.name,
+		"cost_center": payable_row.cost_center,
+	})
+	be.append("accounts", {
+		"account": frappe.get_cached_value("Company", jv.company, "default_bank_account"),
+		"credit_in_account_currency": remaining,
+		"cost_center": payable_row.cost_center,
+	})
+	return be
 
 
 # ----------------------------------------------------------------------
 # Journal Entry: keep the linked EOS payment status in sync
 # ----------------------------------------------------------------------
 def je_validate(doc, method=None):
+	if not doc.get("custom_eos_reference"):
+		for row in doc.accounts:
+			if row.reference_type == "Journal Entry" and row.reference_name:
+				ref = frappe.db.get_value(
+					"Journal Entry", row.reference_name, ["custom_eos_doctype", "custom_eos_reference"], as_dict=True
+				)
+				if ref and ref.custom_eos_reference:
+					doc.custom_eos_doctype, doc.custom_eos_reference = ref.custom_eos_doctype, ref.custom_eos_reference
+					break
 	dt, name = doc.get("custom_eos_doctype"), doc.get("custom_eos_reference")
 	if not name:
 		return

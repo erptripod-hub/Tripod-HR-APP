@@ -64,7 +64,7 @@ def install():
 		 "description": "Transparent PNG. Printed on approval documents (e.g. EOS) when this user approves."},
 	]
 	fields["Company"] = [
-		{"fieldname": "custom_eos_accounts_section", "label": "End of Service Accounts", "fieldtype": "Section Break", "insert_after": "default_expense_account", "collapsible": 1},
+		{"fieldname": "custom_eos_accounts_section", "label": "End of Service Accounts", "fieldtype": "Section Break", "insert_after": "default_finance_book", "collapsible": 0},
 		{"fieldname": "custom_eos_expense_account", "label": "EOS Expense Account", "fieldtype": "Link", "options": "Account", "insert_after": "custom_eos_accounts_section"},
 		{"fieldname": "custom_eos_payable_account", "label": "EOS Payable Account", "fieldtype": "Link", "options": "Account", "insert_after": "custom_eos_expense_account",
 		 "description": "Liability ledger with Account Type = Payable. EOS is booked here per employee on Finance approval."},
