@@ -22,7 +22,7 @@ def get_my_guideline():
 				order_by="company asc"
 			)
 			return {"success": True, "is_admin": True,
-					"employee": {"name": "Administrator", "company": "All Companies", "image": ""},
+					"employee": {"name": "Administrator", "company": "All Companies", "image": "", "id": ""},
 					"guidelines": guidelines,
 					"guideline": guidelines[0] if guidelines else None}
 		return {"success": False, "error": "No active employee record found. Ask HR to link your user to an Employee record."}
@@ -38,27 +38,24 @@ def get_my_guideline():
 		as_dict=True
 	)
 
-	# Check if already acknowledged
 	acknowledged = False
 	if guideline:
-		acknowledged = frappe.db.exists("Guideline Acknowledgement", {
+		acknowledged = bool(frappe.db.exists("Guideline Acknowledgement", {
 			"employee": employee.name,
 			"guideline": guideline.name
-		})
+		}))
 
 	return {
 		"success": True, "is_admin": False,
 		"employee": {"name": employee.employee_name, "company": company,
 					 "image": employee.image, "id": employee.name},
 		"guideline": guideline,
-		"acknowledged": bool(acknowledged)
+		"acknowledged": acknowledged
 	}
 
 
 @frappe.whitelist()
 def acknowledge(employee, guideline):
-	"""Save acknowledgement record for the employee."""
-	# Verify caller owns this employee record
 	user = frappe.session.user
 	emp_user = frappe.db.get_value("Employee", employee, "user_id")
 	is_admin = bool(set(frappe.get_roles(user)) & {"System Manager", "HR Manager", "HR User"})
@@ -66,7 +63,6 @@ def acknowledge(employee, guideline):
 	if emp_user != user and not is_admin:
 		frappe.throw("Not permitted", frappe.PermissionError)
 
-	# Avoid duplicates
 	if frappe.db.exists("Guideline Acknowledgement", {"employee": employee, "guideline": guideline}):
 		return {"already_done": True}
 
@@ -84,7 +80,6 @@ def acknowledge(employee, guideline):
 
 @frappe.whitelist()
 def get_acknowledgement_report(guideline):
-	"""HR only — returns who acknowledged and who is pending."""
 	if not bool(set(frappe.get_roles(frappe.session.user)) & {"System Manager", "HR Manager", "HR User"}):
 		frappe.throw("Not permitted", frappe.PermissionError)
 
@@ -93,12 +88,11 @@ def get_acknowledgement_report(guideline):
 	if not g:
 		frappe.throw("Guideline not found")
 
-	# All active employees in that company
+	# Only active Office Staff
 	all_emp = frappe.get_all("Employee",
-		filters={"company": g.company, "status": "Active"},
+		filters={"company": g.company, "status": "Active", "employment_type": "Office Staff"},
 		fields=["name", "employee_name", "designation", "department"])
 
-	# Who acknowledged
 	acks = {a.employee: a.acknowledged_on for a in frappe.get_all(
 		"Guideline Acknowledgement",
 		filters={"guideline": guideline},
