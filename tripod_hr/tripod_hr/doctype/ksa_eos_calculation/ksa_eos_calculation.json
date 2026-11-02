@@ -51,6 +51,8 @@
   "leaves_accrued",
   "leaves_utilized",
   "leaves_balance",
+  "compensatory_leave_balance",
+  "compensatory_leave_amount",
   "column_break_leave",
   "leave_salary_paid",
   "leave_daily_rate",
@@ -377,6 +379,21 @@
    "label": "Leaves Balance"
   },
   {
+   "fieldname": "compensatory_leave_balance",
+   "fieldtype": "Float",
+   "label": "Compensatory Leave Balance",
+   "read_only": 1,
+   "description": "Unused Compensatory Off on the settlement date (updated on save)"
+  },
+  {
+   "fieldname": "compensatory_leave_amount",
+   "fieldtype": "Currency",
+   "label": "Compensatory Leave Amount",
+   "options": "SAR",
+   "read_only": 1,
+   "description": "Balance \u00d7 Basic \u00f7 30. Included in Leave Salary Total."
+  },
+  {
    "fieldname": "column_break_leave",
    "fieldtype": "Column Break"
   },
@@ -687,7 +704,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2026-10-27 07:38:54.000000",
+ "modified": "2026-11-02 09:04:27.000000",
  "modified_by": "Administrator",
  "module": "Tripod HR",
  "name": "KSA EOS Calculation",

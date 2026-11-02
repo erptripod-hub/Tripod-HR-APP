@@ -299,7 +299,7 @@ frappe.ui.form.on('UAE EOS Calculation', {
 
     calc_summary: function(frm) {
         const grat = flt(frm.doc.gratuity_payable);
-        const leave = flt(frm.doc.leave_salary_payable);
+        const leave = flt(frm.doc.leave_salary_payable) + flt(frm.doc.compensatory_leave_amount);
         const ot = flt(frm.doc.overtime_payable);
         const sal = flt(frm.doc.salary_payable);
         const ded = flt(frm.doc.total_recovery);

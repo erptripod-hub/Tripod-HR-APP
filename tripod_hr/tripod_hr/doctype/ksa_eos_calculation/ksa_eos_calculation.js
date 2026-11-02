@@ -303,7 +303,7 @@ frappe.ui.form.on('KSA EOS Calculation', {
         if (frm.doc.calculation_mode === 'Manual') return;
         
         let gratuity = flt(frm.doc.gratuity_payable) || 0;
-        let leave = flt(frm.doc.leave_salary_payable) || 0;
+        let leave = (flt(frm.doc.leave_salary_payable) || 0) + (flt(frm.doc.compensatory_leave_amount) || 0);
         let overtime = flt(frm.doc.overtime_payable) || 0;
         let salary = flt(frm.doc.salary_payable) || 0;
         let recovery = flt(frm.doc.total_recovery) || 0;

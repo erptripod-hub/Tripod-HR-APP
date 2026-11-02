@@ -22,6 +22,7 @@ class UAEEOSCalculation(Document):
 		self.calculate_overtime()
 		self.calculate_pending_salary()
 		self.calculate_recovery()
+		self.calculate_compensatory_leave()
 		self.calculate_summary()
 		self.set_default_status()
 
@@ -254,9 +255,23 @@ class UAEEOSCalculation(Document):
 	# ------------------------------------------------------------------
 	# Final Summary
 	# ------------------------------------------------------------------
+	def calculate_compensatory_leave(self):
+		"""Unused Compensatory Off on the settlement date, paid at Basic / 30."""
+		if self.docstatus == 0 and self.employee and self.date_of_settlement:
+			balance = 0
+			try:
+				from hrms.hr.doctype.leave_application.leave_application import get_leave_balance_on
+
+				balance = flt(get_leave_balance_on(self.employee, "Compensatory Off", self.date_of_settlement))
+			except Exception:
+				balance = 0
+			self.compensatory_leave_balance = max(balance, 0)
+		daily = flt(self.basic_salary) / 30 if self.basic_salary else 0
+		self.compensatory_leave_amount = flt(flt(self.compensatory_leave_balance) * daily, 2)
+
 	def calculate_summary(self):
 		self.total_gratuity = flt(self.gratuity_payable)
-		self.total_leave_salary = flt(self.leave_salary_payable)
+		self.total_leave_salary = flt(self.leave_salary_payable) + flt(self.get("compensatory_leave_amount"))
 		self.total_overtime = flt(self.overtime_payable)
 		self.total_salary_payable = flt(self.salary_payable)
 
