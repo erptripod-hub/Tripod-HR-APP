@@ -271,3 +271,60 @@ def update_eos_payment(dt, name):
 		"custom_paid_amount": paid,
 		"custom_payment_reference": rows[0].name if rows else None,
 	})
+
+
+# ----------------------------------------------------------------------
+# Employee signature from the scanned, signed EOS print
+# ----------------------------------------------------------------------
+SIGN_ROLES = ("EOS Creator", "HR Manager", "System Manager")
+
+
+def _check_sign_access(doctype, name):
+	if doctype not in EOS_DOCTYPES:
+		frappe.throw(_("Not an EOS document."))
+	if not set(SIGN_ROLES) & set(frappe.get_roles()):
+		frappe.throw(_("Only HR can add the employee signature."), frappe.PermissionError)
+	frappe.has_permission(doctype, "read", doc=name, throw=True)
+
+
+@frappe.whitelist()
+def extract_employee_signature(doctype, name, file_url):
+	"""Cut the employee signature from the signed copy and return a preview URL (not saved on the EOS yet)."""
+	from tripod_hr.tripod_hr.eos_approval.signature_cut import cut_employee_signature, load_page
+
+	_check_sign_access(doctype, name)
+	file_doc = frappe.get_doc("File", {"file_url": file_url})
+	is_pdf = file_url.lower().endswith(".pdf")
+	try:
+		img = load_page(file_doc.get_content(), is_pdf)
+		png = cut_employee_signature(img) if img else None
+	except Exception:
+		frappe.log_error(title="EOS signature cut failed")
+		png = None
+	if not png:
+		frappe.throw(_("Could not find the employee signature in this file. Upload a clear scan, or upload the signature as an image instead."))
+
+	sig = frappe.get_doc({
+		"doctype": "File",
+		"file_name": f"{name}-employee-signature.png",
+		"attached_to_doctype": doctype,
+		"attached_to_name": name,
+		"is_private": 0,
+		"content": png,
+	})
+	sig.save(ignore_permissions=True)
+	return sig.file_url
+
+
+@frappe.whitelist()
+def save_employee_signature(doctype, name, signature_url, signed_copy_url=None):
+	_check_sign_access(doctype, name)
+	values = {"custom_employee_signature": signature_url}
+	if signed_copy_url:
+		values["custom_signed_copy"] = signed_copy_url
+		# keep the scan attached to the EOS as proof
+		frappe.db.set_value("File", {"file_url": signed_copy_url, "attached_to_name": ["is", "not set"]},
+			{"attached_to_doctype": doctype, "attached_to_name": name})
+	frappe.db.set_value(doctype, name, values)
+	frappe.get_doc(doctype, name).add_comment("Info", _("Employee signature added"))
+	return True
