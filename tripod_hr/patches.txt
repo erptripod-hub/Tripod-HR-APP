@@ -1,1 +1,2 @@
 tripod_hr.patches.restore_ess_workspace
+tripod_hr.patches.update_eos_print_formats
