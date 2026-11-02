@@ -2,6 +2,55 @@ import frappe
 from frappe.utils import now_datetime
 
 
+def _is_acknowledged(employee, guideline, file_url):
+	"""Acknowledged only if the record exists AND was for the current file.
+	Legacy records with no stored file count as acknowledged."""
+	ack = frappe.db.get_value(
+		"Guideline Acknowledgement",
+		{"employee": employee, "guideline": guideline},
+		["name", "guideline_file"], as_dict=True
+	)
+	if not ack:
+		return False
+	return (not ack.guideline_file) or ack.guideline_file == (file_url or "")
+
+
+@frappe.whitelist()
+def get_pending_guideline():
+	"""Used by the login popup. Returns the guideline the current user still
+	has to acknowledge, or None."""
+	user = frappe.session.user
+	if user in ("Administrator", "Guest"):
+		return None
+
+	emp = frappe.db.get_value(
+		"Employee",
+		{"user_id": user, "status": "Active", "employment_type": "Office Staff"},
+		["name", "employee_name", "company"], as_dict=True
+	)
+	if not emp or not emp.company:
+		return None
+
+	g = frappe.db.get_value(
+		"Appointment Guideline",
+		{"company": emp.company, "status": "Active"},
+		["name", "title", "guideline_file"], as_dict=True
+	)
+	if not g or not g.guideline_file:
+		return None
+	if _is_acknowledged(emp.name, g.name, g.guideline_file):
+		return None
+
+	return {
+		"employee": emp.name,
+		"employee_name": emp.employee_name,
+		"company": emp.company,
+		"guideline": g.name,
+		"title": g.title,
+		"file": g.guideline_file,
+	}
+
+
 @frappe.whitelist()
 def get_my_guideline():
 	user = frappe.session.user
@@ -40,10 +89,7 @@ def get_my_guideline():
 
 	acknowledged = False
 	if guideline:
-		acknowledged = bool(frappe.db.exists("Guideline Acknowledgement", {
-			"employee": employee.name,
-			"guideline": guideline.name
-		}))
+		acknowledged = _is_acknowledged(employee.name, guideline.name, guideline.guideline_file)
 
 	return {
 		"success": True, "is_admin": False,
@@ -63,17 +109,31 @@ def acknowledge(employee, guideline):
 	if emp_user != user and not is_admin:
 		frappe.throw("Not permitted", frappe.PermissionError)
 
-	if frappe.db.exists("Guideline Acknowledgement", {"employee": employee, "guideline": guideline}):
+	file_url = frappe.db.get_value("Appointment Guideline", guideline, "guideline_file") or ""
+
+	if _is_acknowledged(employee, guideline, file_url):
 		return {"already_done": True}
 
-	doc = frappe.get_doc({
-		"doctype": "Guideline Acknowledgement",
-		"employee": employee,
-		"guideline": guideline,
-		"acknowledged_on": now_datetime()
-	})
-	doc.flags.ignore_permissions = True
-	doc.insert()
+	existing = frappe.db.get_value(
+		"Guideline Acknowledgement", {"employee": employee, "guideline": guideline}, "name"
+	)
+	if existing:
+		# File was replaced since last acknowledgement - refresh the record
+		doc = frappe.get_doc("Guideline Acknowledgement", existing)
+		doc.acknowledged_on = now_datetime()
+		doc.guideline_file = file_url
+		doc.flags.ignore_permissions = True
+		doc.save()
+	else:
+		doc = frappe.get_doc({
+			"doctype": "Guideline Acknowledgement",
+			"employee": employee,
+			"guideline": guideline,
+			"guideline_file": file_url,
+			"acknowledged_on": now_datetime()
+		})
+		doc.flags.ignore_permissions = True
+		doc.insert()
 	frappe.db.commit()
 	return {"success": True, "acknowledged_on": str(doc.acknowledged_on)}
 
@@ -84,7 +144,7 @@ def get_acknowledgement_report(guideline):
 		frappe.throw("Not permitted", frappe.PermissionError)
 
 	g = frappe.db.get_value("Appointment Guideline", guideline,
-							["name", "title", "company"], as_dict=True)
+							["name", "title", "company", "guideline_file"], as_dict=True)
 	if not g:
 		frappe.throw("Guideline not found")
 
@@ -96,8 +156,8 @@ def get_acknowledgement_report(guideline):
 	acks = {a.employee: a.acknowledged_on for a in frappe.get_all(
 		"Guideline Acknowledgement",
 		filters={"guideline": guideline},
-		fields=["employee", "acknowledged_on"]
-	)}
+		fields=["employee", "acknowledged_on", "guideline_file"]
+	) if (not a.guideline_file) or a.guideline_file == (g.guideline_file or "")}
 
 	acknowledged = []
 	pending = []

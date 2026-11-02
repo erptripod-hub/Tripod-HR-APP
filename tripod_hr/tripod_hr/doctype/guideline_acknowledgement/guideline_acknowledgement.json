@@ -5,9 +5,14 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "employee", "employee_name", "company",
+  "employee",
+  "employee_name",
+  "company",
   "column_break_1",
-  "guideline", "guideline_title", "acknowledged_on"
+  "guideline",
+  "guideline_title",
+  "guideline_file",
+  "acknowledged_on"
  ],
  "fields": [
   {
@@ -55,6 +60,12 @@
    "read_only": 1
   },
   {
+   "fieldname": "guideline_file",
+   "fieldtype": "Data",
+   "label": "Acknowledged File",
+   "read_only": 1
+  },
+  {
    "fieldname": "acknowledged_on",
    "fieldtype": "Datetime",
    "label": "Acknowledged On",
@@ -62,24 +73,34 @@
    "read_only": 1
   }
  ],
- "modified": "2026-10-27 00:00:00.000000",
+ "modified": "2026-11-03 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Tripod HR",
  "name": "Guideline Acknowledgement",
  "owner": "Administrator",
  "permissions": [
   {
-   "create": 1, "read": 1, "write": 1,
+   "create": 1,
+   "read": 1,
+   "write": 1,
    "role": "Employee Self Service"
   },
   {
-   "create": 1, "read": 1, "write": 1, "delete": 1,
-   "export": 1, "report": 1,
+   "create": 1,
+   "read": 1,
+   "write": 1,
+   "delete": 1,
+   "export": 1,
+   "report": 1,
    "role": "HR Manager"
   },
   {
-   "create": 1, "read": 1, "write": 1, "delete": 1,
-   "export": 1, "report": 1,
+   "create": 1,
+   "read": 1,
+   "write": 1,
+   "delete": 1,
+   "export": 1,
+   "report": 1,
    "role": "HR User"
   }
  ],
