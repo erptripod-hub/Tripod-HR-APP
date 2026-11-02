@@ -44,7 +44,7 @@
 		var acknowledged = false;
 
 		var d = new frappe.ui.Dialog({
-			title: 'Appointment Guidelines — ' + frappe.utils.escape_html(p.company),
+			title: 'HR Handbook — ' + frappe.utils.escape_html(p.company),
 			size: 'extra-large',
 			static: true,
 			fields: [{ fieldtype: 'HTML', fieldname: 'viewer' }],

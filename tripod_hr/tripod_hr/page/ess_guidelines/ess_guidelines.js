@@ -1,7 +1,7 @@
 frappe.pages['ess-guidelines'].on_page_load = function(wrapper) {
 	frappe.ui.make_app_page({
 		parent: wrapper,
-		title: 'Appointment Guidelines',
+		title: 'HR Handbook',
 		single_column: true
 	});
 
@@ -102,7 +102,7 @@ frappe.pages['ess-guidelines'].on_page_load = function(wrapper) {
 	// ── Admin view ────────────────────────────────────────────────────────
 	function renderAdmin($wrap, d) {
 		var guidelines = d.guidelines || [];
-		var html = '<div class="ess-gl-header"><div><div class="ess-gl-title">Appointment Guidelines</div>' +
+		var html = '<div class="ess-gl-header"><div><div class="ess-gl-title">HR Handbook</div>' +
 			'<div class="ess-gl-subtitle">Admin view — all companies · Office Staff only</div></div>' +
 			'<div class="ess-gl-badge"><div style="width:32px;height:32px;border-radius:50%;background:#3b5bdb;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff">AD</div>' +
 			'<div><div class="ess-gl-badge-name">Administrator</div><div class="ess-gl-badge-co">All Companies</div></div></div></div>';
@@ -239,7 +239,7 @@ frappe.pages['ess-guidelines'].on_page_load = function(wrapper) {
 	function makeHeader(emp) {
 		var initials = (emp.name || 'U').split(' ').map(function(n) { return n[0]; }).join('').substring(0, 2).toUpperCase();
 		return '<div class="ess-gl-header">' +
-			'<div><div class="ess-gl-title">Appointment Guidelines</div>' +
+			'<div><div class="ess-gl-title">HR Handbook</div>' +
 			'<div class="ess-gl-subtitle">Secure read-only document — downloading is disabled.</div></div>' +
 			'<div class="ess-gl-badge">' +
 			'<div style="width:32px;height:32px;border-radius:50%;background:#3b5bdb;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff">' + initials + '</div>' +
@@ -249,7 +249,7 @@ frappe.pages['ess-guidelines'].on_page_load = function(wrapper) {
 	}
 
 	function showError($wrap, msg) {
-		$wrap.html('<div class="ess-gl-header"><div class="ess-gl-title">Appointment Guidelines</div></div>' +
+		$wrap.html('<div class="ess-gl-header"><div class="ess-gl-title">HR Handbook</div></div>' +
 			'<div class="ess-gl-error">⚠️ ' + frappe.utils.escape_html(msg) + '</div>');
 	}
 };
