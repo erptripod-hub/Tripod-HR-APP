@@ -295,7 +295,7 @@ class KSAEOSCalculation(Document):
             except Exception:
                 balance = 0
             self.compensatory_leave_balance = max(balance, 0)
-        daily = flt(self.basic_salary) / 30 if self.basic_salary else 0
+        daily = flt(self.gross_salary) / 30 if self.gross_salary else 0
         self.compensatory_leave_amount = flt(flt(self.compensatory_leave_balance) * daily, 2)
 
     def calculate_summary(self):
